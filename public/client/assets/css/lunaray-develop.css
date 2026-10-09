@@ -1,0 +1,495 @@
+/* ===== Develop With Us / Develop Your Product page ===== */
+
+/* ----- Shared typography primitives (copied from lunaray-beranda.css)
+   This page doesn't load the homepage's stylesheet, so the handful of
+   generic hero-text classes it relies on are duplicated here rather
+   than pulling in that entire ~90KB file for a few shared rules. ----- */
+.hero-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Nexa', sans-serif;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--lunaray-salmon-dark);
+    margin-bottom: 22px;
+}
+
+.eyebrow-dash {
+    display: inline-block;
+    width: 32px;
+    height: 2px;
+    background: var(--lunaray-salmon);
+}
+
+.hero-heading {
+    font-family: 'Nexa', sans-serif;
+    font-size: clamp(28px, 2.8vw, 40px);
+    line-height: 1.18;
+    color: var(--lunaray-navy);
+    margin-bottom: 16px;
+    letter-spacing: -0.5px;
+}
+
+.hero-heading-bold {
+    font-weight: 700;
+}
+
+.hero-heading-accent-bold {
+    font-weight: 700;
+    color: var(--lunaray-salmon-dark);
+}
+
+.hero-desc {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--lunaray-text);
+    max-width: 640px;
+    margin-bottom: 20px;
+}
+
+.dwu-section {
+    background: #fdfbf9;
+}
+
+/* ----- Hero ----- */
+.dwu-hero {
+    background-color: var(--lunaray-navy);
+    background-image:
+        linear-gradient(100deg, rgba(28, 43, 69, .96) 0%, rgba(28, 43, 69, .8) 38%, rgba(28, 43, 69, .35) 65%, rgba(28, 43, 69, .1) 100%),
+        var(--dwu-bg, none);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.dwu-hero-inner {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: clamp(72px, 9vw, 140px) 5vw clamp(90px, 10vw, 150px);
+}
+
+.dwu-hero-text {
+    max-width: 620px;
+}
+
+.dwu-eyebrow--light {
+    color: #fff;
+    opacity: .85;
+}
+
+.dwu-hero-heading.hero-heading .hero-heading-bold {
+    color: #fff;
+}
+
+.dwu-hero-desc.hero-desc {
+    color: rgba(255, 255, 255, .78);
+}
+
+.dwu-hero-tagline {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: 13.5px;
+    letter-spacing: .6px;
+    text-transform: uppercase;
+    color: #fff;
+    max-width: 380px;
+    line-height: 1.5;
+    margin: 12px 0 28px;
+}
+
+.dwu-hero-cta {
+    background: rgba(255, 255, 255, .08);
+    border: 1px solid rgba(255, 255, 255, .25);
+    color: #fff;
+    backdrop-filter: blur(10px);
+}
+
+.dwu-hero-cta:hover {
+    background: rgba(255, 255, 255, .16);
+}
+
+@media (max-width: 992px) {
+    .dwu-hero {
+        background-image:
+            linear-gradient(180deg, rgba(28, 43, 69, .75) 0%, rgba(28, 43, 69, .93) 55%, rgba(28, 43, 69, .97) 100%),
+            var(--dwu-bg, none);
+    }
+
+    .dwu-hero-text {
+        max-width: 100%;
+    }
+}
+
+/* ----- Path sections (Startup / White Label / OEM & ODM / IPM / OBM) -----
+   Each section is a full-bleed photographic background (set inline via the
+   --dwu-bg custom property) with a white-to-transparent scrim layered on
+   top so the text column stays readable without boxing the photo off. ----- */
+.dwu-path {
+    background-color: #fdfbf9;
+    background-image:
+        linear-gradient(90deg, #fdfbf9 0%, rgba(253, 251, 249, .92) 32%, rgba(253, 251, 249, .5) 55%, rgba(253, 251, 249, .1) 78%),
+        var(--dwu-bg, none);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    padding: clamp(64px, 8vw, 120px) 5vw;
+    min-height: 560px;
+    display: flex;
+    align-items: center;
+}
+
+.dwu-path--reverse {
+    background-image:
+        linear-gradient(270deg, #fdfbf9 0%, rgba(253, 251, 249, .92) 32%, rgba(253, 251, 249, .5) 55%, rgba(253, 251, 249, .1) 78%),
+        var(--dwu-bg, none);
+    justify-content: flex-end;
+}
+
+.dwu-path-eyebrow {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: 12.5px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--lunaray-salmon-dark);
+    margin-bottom: 14px;
+}
+
+.dwu-path-text {
+    max-width: 620px;
+}
+
+.dwu-path-text .hero-heading,
+.dwu-path-text .hero-desc {
+    max-width: 100%;
+}
+
+/* 3-column info lists */
+.dwu-cols {
+    display: grid;
+    gap: 20px;
+    margin: 28px 0 20px;
+}
+
+.dwu-cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.dwu-col-title {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: 11.5px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--lunaray-navy);
+    margin-bottom: 10px;
+}
+
+.dwu-col-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.dwu-col-list li {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 300;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--lunaray-text);
+    padding-left: 14px;
+    position: relative;
+}
+
+.dwu-col-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--lunaray-salmon);
+}
+
+.dwu-quote {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--lunaray-navy);
+    padding: 14px 18px;
+    border-left: 3px solid var(--lunaray-salmon);
+    background: rgba(217, 141, 128, .06);
+    border-radius: 0 10px 10px 0;
+    margin-top: 8px;
+}
+
+/* OEM vs ODM comparison cards */
+.dwu-flow-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 8px 0 20px;
+}
+
+.dwu-flow-card {
+    background: #fff;
+    border: 1px solid rgba(28, 43, 69, .06);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(28, 43, 69, .05);
+    padding: 18px 20px;
+}
+
+.dwu-flow-title {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--lunaray-salmon-dark);
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    margin-bottom: 12px;
+}
+
+.dwu-flow-steps {
+    margin: 0;
+    padding: 0 0 0 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.dwu-flow-steps li {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--lunaray-navy);
+}
+
+@media (max-width: 992px) {
+    .dwu-path,
+    .dwu-path--reverse {
+        background-image:
+            linear-gradient(180deg, rgba(253, 251, 249, .8) 0%, rgba(253, 251, 249, .96) 45%, #fdfbf9 75%),
+            var(--dwu-bg, none);
+        justify-content: flex-start;
+        min-height: 0;
+    }
+
+    .dwu-path-text {
+        max-width: 100%;
+    }
+
+    .dwu-cols-3 {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .dwu-flow-compare {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .dwu-cols-3 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ----- Find Your Path (closing) ----- */
+.dwu-findpath {
+    background-color: var(--lunaray-navy);
+    background-image:
+        linear-gradient(270deg, rgba(28, 43, 69, .96) 0%, rgba(28, 43, 69, .85) 40%, rgba(28, 43, 69, .5) 65%, rgba(28, 43, 69, .15) 100%),
+        var(--dwu-bg, none);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.dwu-findpath-inner {
+    width: 100%;
+    max-width: 800px;
+    padding: clamp(56px, 6vw, 96px) 5vw clamp(64px, 7vw, 100px);
+}
+
+.dwu-findpath-inner .dwu-path-eyebrow {
+    margin-bottom: 14px;
+}
+
+.dwu-findpath-inner .hero-heading .hero-heading-bold {
+    color: #fff;
+}
+
+.dwu-findpath-inner .hero-desc {
+    color: rgba(255, 255, 255, .78);
+    max-width: 100%;
+}
+
+.dwu-flowchart {
+    margin: 28px 0 32px;
+    padding: 24px;
+    background: rgba(255, 255, 255, .04);
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-radius: 20px;
+}
+
+.dwu-flowchart-label {
+    text-align: center;
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, .6);
+    margin-bottom: 14px;
+}
+
+.dwu-flowchart-chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.dwu-flowchart-chips span {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: 10.5px;
+    color: #fff;
+    background: rgba(255, 255, 255, .08);
+    border: 1px solid rgba(255, 255, 255, .14);
+    border-radius: 999px;
+    padding: 7px 14px;
+}
+
+.dwu-flowchart-cards {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.dwu-flowchart-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: rgba(255, 255, 255, .06);
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 14px;
+    padding: 14px 12px;
+    text-decoration: none;
+    transition: background .2s ease, transform .2s ease;
+}
+
+.dwu-flowchart-card:hover {
+    background: rgba(255, 255, 255, .12);
+    transform: translateY(-2px);
+}
+
+.dwu-flowchart-num {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    color: var(--lunaray-salmon);
+}
+
+.dwu-flowchart-name {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: #fff;
+}
+
+.dwu-flowchart-desc {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 300;
+    font-size: 10.5px;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, .65);
+}
+
+.dwu-flowchart-arrow {
+    text-align: center;
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: 10.5px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, .5);
+    margin-bottom: 10px;
+}
+
+.dwu-flowchart-result {
+    text-align: center;
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: #fff;
+    background: rgba(255, 255, 255, .08);
+    border: 1px solid rgba(255, 255, 255, .16);
+    border-radius: 999px;
+    padding: 12px 20px;
+}
+
+.dwu-findpath-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.dwu-findpath-btn:not(.glass-btn-primary) {
+    color: #fff;
+    background: rgba(255, 255, 255, .08);
+    border: 1px solid rgba(255, 255, 255, .25);
+    backdrop-filter: blur(10px);
+}
+
+.dwu-findpath-btn:not(.glass-btn-primary):hover {
+    background: rgba(255, 255, 255, .16);
+}
+
+.dwu-findpath-tagline {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: .3px;
+    color: rgba(255, 255, 255, .8);
+    margin: 0;
+}
+
+@media (max-width: 992px) {
+    .dwu-findpath {
+        background-image:
+            linear-gradient(180deg, rgba(28, 43, 69, .82) 0%, rgba(28, 43, 69, .95) 50%, var(--lunaray-navy) 80%),
+            var(--dwu-bg, none);
+        justify-content: flex-start;
+    }
+
+    .dwu-findpath-inner {
+        max-width: 100%;
+    }
+
+    .dwu-flowchart-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .dwu-flowchart-cards {
+        grid-template-columns: 1fr;
+    }
+}

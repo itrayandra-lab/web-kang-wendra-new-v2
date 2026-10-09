@@ -1,0 +1,700 @@
+<?php
+
+namespace App\Jobs;
+
+use App\Models\EditorPreference;
+use App\Models\PostCategory;
+use App\Models\PostTags;
+use App\Models\Posts;
+use App\Models\RefArticle;
+use App\Models\ScraperConfig;
+use App\Services\EditorPreferenceService;
+use App\Services\SearchEngineLandScraperService;
+use DateTime;
+use DateTimeZone;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+
+class GenerateFromRefArticleJob implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    public int $timeout = 900;
+    public int $tries   = 3;
+    public int $backoff = 60;
+
+    public function __construct(
+        public int $refArticleId
+    ) {}
+
+    public function handle(
+        SearchEngineLandScraperService $scraper,
+        EditorPreferenceService $prefService
+    ): void {
+        set_time_limit(900);
+        ini_set('memory_limit', '512M'); // Naikkan limit — full HTML article scrape + regex + DeepSeek response
+
+        $ref = RefArticle::find($this->refArticleId);
+        if (!$ref) {
+            Log::warning('GenerateFromRefArticleJob: RefArticle not found', ['id' => $this->refArticleId]);
+            return;
+        }
+
+        $ref->update(['ai_status' => 'processing', 'ai_error' => null]);
+
+        // ── DAILY LIMIT GUARD ──
+        $dailyLimit = (int) ScraperConfig::getDailyLimit();
+        $tz = new DateTimeZone('Asia/Jakarta');
+        $todayStart = (new DateTime('today', $tz))->format('Y-m-d 00:00:00');
+        $todayEnd   = (new DateTime('today', $tz))->format('Y-m-d 23:59:59');
+
+        $doneToday = RefArticle::where('moved_from_scrape', true)
+            ->where('ai_research_status', 'done')
+            ->whereBetween('updated_at', [$todayStart, $todayEnd])
+            ->count();
+
+        if ($doneToday >= $dailyLimit) {
+            Log::warning('GenerateFromRefArticleJob: daily limit reached, aborting', [
+                'ref_id'     => $ref->id,
+                'url'        => $ref->source_url,
+                'done_today' => $doneToday,
+                'limit'      => $dailyLimit,
+            ]);
+            // Reset status ke idle agar bisa di-queue ulang besok
+            $ref->update([
+                'ai_research_status' => 'idle',
+                'ai_error' => "Daily limit ({$dailyLimit}/hari) tercapai. Silakan generate ulang besok.",
+            ]);
+            throw new \Exception("Daily limit ({$dailyLimit} artikel/hari) sudah tercapai ({$doneToday} done). Job di-abort. Generate bisa dilakukan besok.");
+        }
+
+        Log::info('GenerateFromRefArticleJob: START', [
+            'ref_id'   => $ref->id,
+            'url'      => $ref->source_url,
+            'keyword'  => $ref->source_keyword,
+        ]);
+
+        // ── STEP 1: SCRAPE ─────────────────────────────────────────────
+        $article = $scraper->fetchArticleDetail($ref->source_url);
+
+        if (!$article) {
+            Log::warning('GenerateFromRefArticleJob: failed to fetch', ['url' => $ref->source_url]);
+            $ref->update(['ai_status' => 'failed', 'ai_research_status' => 'failed', 'ai_error' => 'Failed to fetch article from source URL']);
+            $prefService->recordRejection($ref->source_keyword ?? 'general', $ref->source_url, $this->extractTopic($ref->title ?? ''));
+            throw new \Exception('Failed to fetch article from source URL');
+        }
+
+        // ── STEP 2: VALIDATE ────────────────────────────────────────────
+        if (!$scraper->isValidArticle($article)) {
+            Log::warning('GenerateFromRefArticleJob: validation failed', ['url' => $ref->source_url]);
+            $ref->update([
+                'ai_status'          => 'failed',
+                'ai_research_status' => 'failed',
+                'ai_error'          => 'Article validation failed - not AI-focused, missing content, or no image',
+            ]);
+            $prefService->recordRejection($ref->source_keyword ?? 'general', $ref->source_url, $this->extractTopic($ref->title ?? ''));
+            throw new \Exception('Article validation failed');
+        }
+
+        // ── STEP 3: UPDATE REFARTICLE with scraped content ────────────────
+        $ref->update([
+            'title'               => $article['title'],
+            'content'            => $article['content'],
+            'image_url'          => $article['image_url'],
+            'author'             => $article['author'],
+            'published_at'       => $article['published_at'],
+            'tags'               => $article['tags'] ?? [],
+            'ai_research_status' => 'researching',
+        ]);
+
+        // ── STEP 4: PARAPHRASE (DEEPSEEK) ────────────────────────────
+        // Truncate content to first 2-3 paragraphs for faster API processing
+        $truncatedContent = $this->truncateContentForPrompt($article['content'], 3);
+        try {
+            $generated = $this->callDeepSeek($article['title'], $truncatedContent);
+        } catch (\Exception $e) {
+            $ref->update(['ai_status' => 'failed', 'ai_research_status' => 'failed', 'ai_error' => $e->getMessage()]);
+            Log::error('GenerateFromRefArticleJob: DeepSeek failed', ['ref_id' => $ref->id, 'error' => $e->getMessage()]);
+            throw $e;
+        }
+
+        // Validate generated content
+        $contentText = strip_tags($generated['content'] ?? '');
+        if (strlen($contentText) < 500) {
+            $ref->update(['ai_research_status' => 'failed', 'ai_error' => 'Content too short (' . strlen($contentText) . ' chars)']);
+            throw new \Exception('Generated content too short: ' . strlen($contentText) . ' chars');
+        }
+        if (empty(trim($generated['title'] ?? ''))) {
+            $ref->update(['ai_research_status' => 'failed', 'ai_error' => 'No title generated']);
+            throw new \Exception('No title generated');
+        }
+
+        // Check duplicate title
+        $normalizedTitle = trim(strtolower($generated['title']));
+        $existingByTitle = Posts::whereRaw('LOWER(TRIM(title)) = ?', [$normalizedTitle])->first();
+        if ($existingByTitle) {
+            $ref->update(['ai_research_status' => 'failed', 'ai_error' => 'Duplicate title: ' . $generated['title']]);
+            throw new \Exception("Duplicate title: '{$generated['title']}'");
+        }
+
+        // ── STEP 5: SAVE POST ──────────────────────────────────────────
+        $post = $this->savePost($generated, $ref, $article);
+
+        // ── STEP 6: UPDATE REFARTICLE as done ─────────────────────────────
+        $ref->update([
+            'ai_status'           => 'done',
+            'ai_research_status' => 'done',
+            'generated_post_id'   => $post->id,
+            'ai_error'           => null,
+            'moved_from_scrape'   => true,
+            'content'            => null, // cleanup to save DB
+        ]);
+
+        // ── STEP 7: RECORD AI LEARNING ────────────────────────────────
+        $prefService->recordApproval(
+            $ref->source_keyword ?? 'general',
+            $this->extractTopic($ref->title ?? ''),
+            $ref->source_url,
+            $ref->ai_confidence ?? 50
+        );
+
+        Log::info('GenerateFromRefArticleJob: SUCCESS', [
+            'ref_id'      => $ref->id,
+            'post_id'     => $post->id,
+            'url'         => $ref->source_url,
+            'published_at'=> $post->published_at,
+        ]);
+    }
+
+    private function callDeepSeek(string $title, string $content): array
+    {
+        $apiKey  = config('services.deepseek.key');
+        $model   = config('services.deepseek.model', 'deepseek-v4-pro');
+        $baseUrl = config('services.deepseek.base_url', 'https://api.deepseek.com');
+
+        if (!$apiKey) {
+            throw new \Exception('DEEPSEEK_API_KEY belum dikonfigurasi');
+        }
+
+        $maxTokens = (int) config('services.deepseek.max_tokens', 16384);
+        $payload = [
+            'model'    => $model,
+            'messages' => [
+                [
+                    'role'    => 'system',
+                    'content' => 'Kamu adalah penulis artikel teknologi profesional dalam Bahasa Indonesia. '
+                               . 'Tulis artikel yang informatif, mudah dipahami, dan tidak bertele-tele. '
+                               . 'Jangan pernah menyalin kalimat dari sumber asli. Selalu kembalikan JSON.',
+                ],
+                [
+                    'role'    => 'user',
+                    'content' => $this->buildPrompt($title, $content),
+                ],
+            ],
+            'max_tokens'  => $maxTokens,
+            'temperature'  => 0.7,
+        ];
+
+        $response = Http::timeout(600)
+            ->withHeaders([
+                'Authorization' => 'Bearer ' . $apiKey,
+                'Content-Type'  => 'application/json',
+            ])
+            ->post("{$baseUrl}/chat/completions", $payload);
+
+        if ($response->failed()) {
+            $body = $response->json();
+            throw new \Exception("DeepSeek API error [{$response->status()}]: " . ($body['error']['message'] ?? $response->body()));
+        }
+
+        $body = $response->json();
+
+        if (isset($body['usage'])) {
+            Log::info('DeepSeek usage (GenerateFromRefArticleJob)', [
+                'prompt_tokens'     => $body['usage']['prompt_tokens'] ?? 0,
+                'completion_tokens' => $body['usage']['completion_tokens'] ?? 0,
+                'total_tokens'      => $body['usage']['total_tokens'] ?? 0,
+            ]);
+        }
+
+        $raw = trim($body['choices'][0]['message']['content'] ?? '');
+
+        Log::debug('DeepSeek raw (GenerateFromRefArticleJob)', [
+            'title'   => Str::limit($title, 60),
+            'length'  => strlen($raw),
+            'preview' => Str::limit($raw, 200),
+        ]);
+
+        // Try direct parse first
+        $decoded = json_decode($raw, true);
+
+        // Fallback: markdown code block
+        if (!$decoded && preg_match('/```json\s*([\s\S]+?)```/', $raw, $m)) {
+            $decoded = json_decode(trim($m[1]), true);
+        }
+
+        // Fallback: extract JSON object — handle truncated responses
+        if (!$decoded) {
+            $decoded = $this->extractJsonObject($raw);
+        }
+
+        if (!$decoded || !isset($decoded['title'], $decoded['content'])) {
+            throw new \Exception('DeepSeek returned invalid format: ' . Str::limit($raw, 300));
+        }
+
+        // ── NORMALIZE CONTENT ─────────────────────────────────────────
+        // Replace actual newlines (\n \r) and literal \n with space
+        // HTML tags (<p>, <h2>, <strong>) already define structure
+        $decoded['content'] = trim(
+            preg_replace('/\\\\n|\\\\r|\r\n|\r|\n/', ' ', $decoded['content'] ?? '')
+        );
+
+        return $decoded;
+    }
+
+    private function buildPrompt(string $title, string $content): string
+    {
+        return <<<PROMPT
+Kamu adalah penulis artikel teknologi profesional yang menulis dalam Bahasa Indonesia.
+
+Tugas: Tulis artikel baru yang detail dan lengkap berdasarkan artikel di bawah ini.
+
+ATURAN:
+1. Judul: menarik, unik, dalam Bahasa Indonesia, MINIMAL 60 karakter
+2. Content: MINIMAL 8 PARAGRAF. Setiap paragraf 3-4 kalimat. Gunakan <h2> untuk sub-judul. Pakai <p>. Tambahkan <strong> untuk emphasis.
+3. Excerpt: ringkasan 2-3 kalimat
+4. Tags: 5 tags yang relevan dalam Bahasa Indonesia
+5. Meta description: maks 150 karakter
+
+---
+JUDUL ASLI: {$title}
+
+ISI ARTIKEL REFERENSI:
+{$content}
+---
+
+FORMAT OUTPUT (HANYA JSON - tidak ada penjelasan lain):
+{
+  "title": "Judul baru yang menarik dalam Bahasa Indonesia",
+  "content": "HTML content lengkap dengan 8+ paragraf panjang",
+  "excerpt": "Ringkasan 2-3 kalimat",
+  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+  "meta_description": "Deskripsi SEO maks 150 karakter"
+}
+PROMPT;
+    }
+
+    private function savePost(array $generated, RefArticle $ref, array $article): Posts
+    {
+        $adminUser = \App\Models\User::role('admin')->first();
+        if (!$adminUser) {
+            throw new \Exception('Admin user tidak ditemukan');
+        }
+
+        $titleLower  = strtolower($ref->title . ' ' . ($generated['title'] ?? ''));
+        $contentLower = strtolower(strip_tags($generated['content'] ?? ''));
+        $fullText = $titleLower . ' ' . $contentLower;
+
+        // ─── Keyword → Category mapping (priority: specific → general) ───
+        // Each rule: keywords array + categorySlug + categoryName for tags
+        $categoryRules = [
+            // Priority 1: AI Architecture (most specific)
+            [
+                'priority' => 1,
+                'keywords' => [
+                    'ai architecture', 'ai system design', 'ai infrastructure',
+                    'ai selection risk', 'decision architecture',
+                    'trust infrastructure', 'generative discovery',
+                    'selection framework', 'ai decision', 'brand architecture',
+                    'ai system', 'ai infra',
+                ],
+                'slug' => 'ai-architecture',
+                'tagName' => 'AI Architecture',
+            ],
+            // Priority 2: AI Branding
+            [
+                'priority' => 2,
+                'keywords' => [
+                    'ai branding', 'brand strategy', 'brand identity',
+                    'brand positioning', 'brand architecture', 'brand story',
+                    'rebranding', 'brand differentiation', 'brand trust',
+                    'brand perception',
+                ],
+                'slug' => 'brand-strategy',
+                'tagName' => 'Brand Strategy',
+            ],
+            // Priority 3: AI Marketing
+            [
+                'priority' => 3,
+                'keywords' => [
+                    'ai marketing', 'ai content marketing', 'ai seo',
+                    'marketing automation', 'ai advertising', 'digital marketing',
+                    'content marketing', 'social media marketing', 'email marketing',
+                    'marketing strategy', 'seo strategy', 'search marketing',
+                ],
+                'slug' => 'ai-marketing',
+                'tagName' => 'AI Marketing',
+            ],
+            // Priority 4: AI Fundamental
+            [
+                'priority' => 4,
+                'keywords' => [
+                    'ai fundamental', 'ai basics', 'artificial general intelligence',
+                    'agi', 'neural network', 'deep learning fundamentals',
+                    'ai fundamentals', 'machine learning basics', 'ai foundation',
+                    'ai history', 'ai evolution', 'ai overview',
+                ],
+                'slug' => 'ai-fundamental',
+                'tagName' => 'AI Fundamental',
+            ],
+            // Priority 5: Reflections
+            [
+                'priority' => 5,
+                'keywords' => [
+                    'reflection', 'wakeup indonesia', 'wake up indonesia',
+                    'pantom', 'brand story', 'personal brand',
+                ],
+                'slug' => 'reflections',
+                'tagName' => 'Reflections',
+            ],
+            // Priority 6: General AI & Teknologi
+            [
+                'priority' => 6,
+                'keywords' => [
+                    'ai', 'chatgpt', 'gpt-4', 'gpt-5', 'llm', 'openai', 'gemini',
+                    'claude', 'deepseek', 'generative ai', 'generative', 'machine learning',
+                    'deep learning', 'artificial intelligence', 'langchain', 'copilot',
+                    'mistral', 'anthropic', 'ai agent', 'agentic', 'rag system',
+                    'rag llm', 'llm fine-tuning', 'ai model', 'foundation model',
+                    'perplexity', 'ai search', 'llama', 'groq', 'hugging face',
+                ],
+                'slug' => 'ai-teknologi',
+                'tagName' => 'AI & Teknologi',
+            ],
+            // Priority 7: SEO & Search
+            [
+                'priority' => 7,
+                'keywords' => [
+                    'seo', 'search engine optimization', 'google search',
+                    'google algorithm', 'search algorithm', 'serp', 'organic search',
+                    'search engine land', 'search engine journal', 'local seo',
+                    'technical seo', 'backlink', 'link building', 'content marketing',
+                    'google spam', 'search quality', 'google indexing',
+                ],
+                'slug' => 'ai-marketing',
+                'tagName' => 'SEO & Search',
+            ],
+            // Priority 8: Hardware / Chips
+            [
+                'priority' => 8,
+                'keywords' => [
+                    'nvidia', 'gpu', 'processor', 'chip', 'intel', 'amd ryzen',
+                    'snapdragon', 'mediatek', 'ram', 'ssd', 'hdd', 'storage',
+                    'vga', 'cpu', 'ai chip', 'ai hardware', 'tpu', 'npu',
+                ],
+                'slug' => 'ai-teknologi',
+                'tagName' => 'AI Hardware',
+            ],
+            // Priority 9: Cybersecurity
+            [
+                'priority' => 9,
+                'keywords' => [
+                    'cybersecurity', 'hack', 'malware', 'virus', 'data breach',
+                    'privacy', 'privasi', 'keamanan data', 'peretas',
+                    'ransomware', 'phishing', 'kebocoran data', 'zero day',
+                ],
+                'slug' => 'ai-teknologi',
+                'tagName' => 'Keamanan Siber',
+            ],
+            // Priority 10: Cloud & Infrastructure
+            [
+                'priority' => 10,
+                'keywords' => [
+                    'cloud', 'server', 'data center', 'database',
+                    'cloud computing', 'aws', 'google cloud', 'microsoft azure',
+                    'oracle', 'web hosting',
+                ],
+                'slug' => 'ai-teknologi',
+                'tagName' => 'Cloud Computing',
+            ],
+            // Priority 11: Science
+            [
+                'priority' => 11,
+                'keywords' => [
+                    'satelit', 'satelite', 'roket', 'spacex', 'nasa',
+                    'luar angkasa', 'planet', 'bintang', 'galaxy', 'black hole',
+                    'teleskop', 'antariksa',
+                ],
+                'slug' => 'sains',
+                'tagName' => 'Sains',
+            ],
+            // Priority 12: Crypto
+            [
+                'priority' => 12,
+                'keywords' => [
+                    'crypto', 'bitcoin', 'ethereum', 'blockchain', 'nft',
+                    'web3', 'defi', 'cryptocurrency', 'trading crypto',
+                ],
+                'slug' => 'keuangan',
+                'tagName' => 'Crypto',
+            ],
+        ];
+
+        // Find best matching category (highest priority match)
+        $matchedCategory = null;
+        $matchedTagNames = [];
+        $highestPriority = PHP_INT_MAX;
+
+        foreach ($categoryRules as $rule) {
+            foreach ($rule['keywords'] as $kw) {
+                if (strpos($fullText, $kw) !== false) {
+                    if ($rule['priority'] < $highestPriority) {
+                        $highestPriority = $rule['priority'];
+                        $matchedCategory = $rule;
+                        // Reset tag names when finding better match
+                        $matchedTagNames = [$rule['tagName']];
+                    } elseif ($rule['priority'] === $highestPriority) {
+                        // Add additional tag if same priority
+                        if (!in_array($rule['tagName'], $matchedTagNames)) {
+                            $matchedTagNames[] = $rule['tagName'];
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        // Get category from DB (fallback to ai-teknologi, then first available)
+        $category = null;
+        if ($matchedCategory) {
+            $category = PostCategory::where('slug', $matchedCategory['slug'])->first();
+        }
+        if (!$category) {
+            $category = PostCategory::where('slug', 'ai-teknologi')->first()
+                ?? PostCategory::first();
+        }
+
+        // Build tags: from matched categories + AI-generated tags
+        $aiTags = is_array($generated['tags'] ?? null) ? $generated['tags'] : [];
+        $allTags = array_unique(array_merge(['AI'], $matchedTagNames, $aiTags));
+        $tags = array_slice(array_values($allTags), 0, 8);
+
+        foreach ($tags as $tagName) {
+            PostTags::firstOrCreate(
+                ['slug' => Str::slug($tagName)],
+                ['name' => $tagName]
+            );
+        }
+
+        $slug = Str::slug($generated['title']);
+        $base = $slug;
+        $i = 1;
+        while (Posts::where('slug', $slug)->exists()) {
+            $slug = $base . '-' . $i++;
+        }
+
+        // Auto-schedule to next available slot from ScraperConfig
+        // Searches across multiple days to avoid collisions when multiple articles are queued
+        $tz = new DateTimeZone('Asia/Jakarta');
+        $now = new DateTime('now', $tz);
+        $todayDate = $now->format('Y-m-d');
+
+        $scheduleHours = \App\Models\ScraperConfig::getPublishScheduleHours();
+        $slots = [];
+        foreach ($scheduleHours as $time) {
+            $parts = explode(':', $time);
+            $hour = (int) ($parts[0] ?? 0);
+            $slots[] = ['hour' => $hour, 'label' => self::getSlotLabel($hour)];
+        }
+
+        // Find next available slot across next 7 days
+        $publishTime = null;
+        for ($dayOffset = 0; $dayOffset <= 7; $dayOffset++) {
+            $targetDate = (clone $now)->modify("+{$dayOffset} days")->format('Y-m-d');
+            $startOfDay = $targetDate . ' 00:00:00';
+            $endOfDay = $targetDate . ' 23:59:59';
+
+            $existingOnDay = Posts::whereBetween('published_at', [$startOfDay, $endOfDay])->get();
+
+            $usedSlotIndices = [];
+            foreach ($existingOnDay as $p) {
+                $hour = (int) $p->published_at->format('H');
+                foreach ($slots as $idx => $slot) {
+                    if ($hour === $slot['hour']) { $usedSlotIndices[$idx] = true; break; }
+                }
+            }
+
+            foreach ($slots as $idx => $slot) {
+                if (!isset($usedSlotIndices[$idx])) {
+                    $targetDt = new DateTime($targetDate, $tz);
+                    $targetDt->setTime($slot['hour'], 0, 0);
+                    // If it's today, ensure the slot time hasn't passed yet
+                    if ($dayOffset === 0 && $targetDt <= $now) {
+                        continue; // Skip past slots today, try next slot or next day
+                    }
+                    $publishTime = $targetDt;
+                    break 2; // Found a slot, exit both loops
+                }
+            }
+        }
+
+        // Fallback: if all slots full for 7 days, use first slot tomorrow
+        if ($publishTime === null) {
+            $publishTime = (clone $now)->modify('+1 day');
+            $publishTime->setTime($slots[0]['hour'], 0, 0);
+        }
+
+        return Posts::create([
+            'title'        => $generated['title'],
+            'slug'        => $slug,
+            'content'     => $generated['content'],
+            'image'        => $ref->image_url ?: $this->getRandomFallbackImage(),
+            'source'      => $ref->source_url,
+            'domain'      => $ref->source_domain,
+            'status'      => 'active',
+            'published_by'=> 'system',
+            'category_id' => $category->id,
+            'created_by'  => $adminUser->id,
+            'published_at'=> $publishTime->format('Y-m-d H:i:s'),
+            'counter'     => 0,
+            'tags'        => $tags,
+            'meta_data'  => [
+                'seo_title'      => $generated['title'],
+                'seo_desc'       => $generated['meta_description'] ?? Str::limit(strip_tags($generated['content'] ?? ''), 160),
+                'excerpt'        => $generated['excerpt'] ?? '',
+                'ref_article_id' => $ref->id,
+                'ref_source_url' => $ref->source_url,
+                'ref_title'      => $ref->title,
+                'ai_model'      => config('services.deepseek.model', 'deepseek-v4-pro'),
+                'publish_slot'   => $publishTime->format('Y-m-d H:i'),
+                'batch_id'       => $ref->batch_id,
+            ],
+        ]);
+    }
+
+    private function extractTopic(string $title): string
+    {
+        $aiTopics = ['ai', 'llm', 'machine learning', 'deep learning', 'openai', 'gemini', 'chatgpt', 'neural', 'generative', 'agentic', 'rag', 'claude', 'deepseek'];
+        foreach ($aiTopics as $topic) {
+            if (stripos($title, $topic) !== false) return 'AI & Teknologi';
+        }
+        $seoTopics = ['seo', 'search', 'google', 'algorithm', 'serp'];
+        foreach ($seoTopics as $topic) {
+            if (stripos($title, $topic) !== false) return 'SEO & Search';
+        }
+        return 'Teknologi';
+    }
+
+    public function failed(\Throwable $e): void
+    {
+        $isDailyLimitAbort = strpos($e->getMessage(), 'Daily limit') !== false;
+
+        Log::error('GenerateFromRefArticleJob: FAILED', [
+            'ref_id' => $this->refArticleId,
+            'error'  => $e->getMessage(),
+            'daily_limit_abort' => $isDailyLimitAbort,
+        ]);
+
+        // Kalau aborted karena daily limit, reset ke idle (bisa retry besok)
+        // Kalau error biasa, set ke failed
+        RefArticle::where('id', $this->refArticleId)->update([
+            'ai_research_status' => $isDailyLimitAbort ? 'idle' : 'failed',
+            'ai_error'          => $e->getMessage(),
+        ]);
+    }
+
+    /**
+     * Get human-readable label for a publish hour.
+     */
+    protected static function getSlotLabel(int $hour): string
+    {
+        if ($hour < 12) return 'pagi';
+        if ($hour < 17) return 'siang';
+        return 'sore';
+    }
+
+    /**
+     * Extract JSON object from text, respecting string boundaries.
+     * Handles truncated responses by finding the first { and matching its closing }.
+     */
+    protected function extractJsonObject(string $text): ?array
+    {
+        $start = strpos($text, '{');
+        if ($start === false) {
+            return null;
+        }
+
+        $len = strlen($text);
+        $depth = 0;
+        $inString = false;
+        $escape = false;
+
+        for ($i = $start; $i < $len; $i++) {
+            $c = $text[$i];
+
+            if ($escape) {
+                $escape = false;
+                continue;
+            }
+
+            if ($c === '\\') {
+                $escape = true;
+                continue;
+            }
+
+            if ($c === '"') {
+                $inString = !$inString;
+                continue;
+            }
+
+            if ($inString) continue;
+
+            if ($c === '{') {
+                $depth++;
+            } elseif ($c === '}') {
+                $depth--;
+                if ($depth === 0) {
+                    // Found matching close brace
+                    $json = substr($text, $start, $i - $start + 1);
+                    return json_decode($json, true);
+                }
+            }
+        }
+
+        // Truncated — no closing brace found, return what we have
+        $json = substr($text, $start);
+        return json_decode($json, true);
+    }
+
+    /**
+     * Truncate HTML content to first N paragraphs for faster API processing.
+     * Extracts the first $maxParagraphs <p> tags from the HTML content.
+     */
+    protected function truncateContentForPrompt(string $html, int $maxParagraphs = 3): string
+    {
+        if (preg_match_all('/<p[^>]*>([\s\S]*?)<\/p>/i', $html, $matches)) {
+            $paragraphs = array_slice($matches[0], 0, $maxParagraphs);
+            if (!empty($paragraphs)) {
+                return implode("\n\n", $paragraphs);
+            }
+        }
+
+        // Fallback: if no <p> tags found, return first N characters
+        return Str::limit(strip_tags($html), 1500);
+    }
+
+    /**
+     * Get a random fallback image from Unsplash for articles without a source image.
+     */
+    protected function getRandomFallbackImage(): string
+    {
+        $seed = mt_rand(1000000, 9999999);
+        return "https://source.unsplash.com/800x450/?technology,ai,innovation&sig={$seed}";
+    }
+}

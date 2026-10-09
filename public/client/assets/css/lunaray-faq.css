@@ -1,0 +1,385 @@
+/* ===== Explore FAQ page ===== */
+
+/* ----- Shared typography primitives (copied from lunaray-beranda.css)
+   This page doesn't load the homepage's stylesheet, so the handful of
+   generic hero-text classes it relies on are duplicated here rather
+   than pulling in that entire ~90KB file for a few shared rules. ----- */
+.hero-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Nexa', sans-serif;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--lunaray-salmon-dark);
+    margin-bottom: 22px;
+}
+
+.eyebrow-dash {
+    display: inline-block;
+    width: 32px;
+    height: 2px;
+    background: var(--lunaray-salmon);
+}
+
+.hero-heading {
+    font-family: 'Nexa', sans-serif;
+    font-size: clamp(28px, 2.8vw, 40px);
+    line-height: 1.18;
+    color: var(--lunaray-navy);
+    margin-bottom: 16px;
+    letter-spacing: -0.5px;
+}
+
+.hero-heading-bold {
+    font-weight: 700;
+}
+
+.hero-desc {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--lunaray-text);
+    max-width: 640px;
+    margin-bottom: 20px;
+}
+
+.faq-page-section {
+    position: relative;
+    background: #fdfbf9;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: clamp(56px, 6vw, 96px) 5vw clamp(64px, 7vw, 110px);
+}
+
+/* ----- Intro ----- */
+.faqp-intro {
+    max-width: 760px;
+    margin-bottom: clamp(32px, 4vw, 48px);
+}
+
+.faqp-intro .hero-desc {
+    max-width: 100%;
+}
+
+/* ----- Jump nav ----- */
+.faqp-jumpnav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    margin-bottom: clamp(40px, 5vw, 64px);
+    padding-bottom: clamp(28px, 3vw, 40px);
+    border-bottom: 1px solid rgba(28, 43, 69, .1);
+}
+
+.faqp-jumpnav a {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: 11.5px;
+    letter-spacing: .3px;
+    color: var(--lunaray-navy);
+    background: rgba(28, 43, 69, .05);
+    border-radius: 999px;
+    padding: 8px 16px;
+    text-decoration: none;
+    transition: background .2s ease, color .2s ease;
+}
+
+.faqp-jumpnav a:hover {
+    background: var(--lunaray-navy);
+    color: #fff;
+}
+
+/* ----- Category groups ----- */
+.faqp-group {
+    margin-bottom: clamp(40px, 5vw, 64px);
+    scroll-margin-top: 100px;
+}
+
+.faqp-group-title {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: clamp(15px, 1.3vw, 17px);
+    letter-spacing: .2px;
+    color: var(--lunaray-salmon-dark);
+    text-transform: uppercase;
+    margin: 0 0 18px;
+}
+
+.faqp-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Solid background: matches the homepage FAQ card treatment so both
+   pages read as the same design system. */
+.faqp-item {
+    background: #fff;
+    border: 1px solid rgba(28, 43, 69, .06);
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(28, 43, 69, .06);
+    overflow: hidden;
+    scroll-margin-top: 100px;
+}
+
+.faqp-question {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 22px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-family: 'Nexa', sans-serif;
+}
+
+.faqp-index {
+    flex-shrink: 0;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--lunaray-salmon-dark);
+    min-width: 24px;
+}
+
+.faqp-question-text {
+    flex: 1;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--lunaray-navy);
+}
+
+.faqp-toggle {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(28, 43, 69, .06);
+    color: var(--lunaray-navy);
+}
+
+.faqp-toggle svg {
+    transition: transform .3s ease;
+}
+
+.faqp-item.is-open .faqp-toggle {
+    background: var(--lunaray-navy);
+    color: #fff;
+}
+
+.faqp-item.is-open .faqp-toggle svg {
+    transform: rotate(45deg);
+}
+
+/* 0fr -> 1fr expand technique, same as the homepage accordions. */
+.faqp-accordion {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows .35s ease;
+}
+
+.faqp-item.is-open .faqp-accordion {
+    grid-template-rows: 1fr;
+}
+
+.faqp-accordion-inner {
+    overflow: hidden;
+}
+
+.faqp-answer {
+    margin: 0;
+    padding: 0 22px 16px 62px;
+    font-family: 'Nexa', sans-serif;
+    font-weight: 300;
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--lunaray-text);
+}
+
+.faqp-answer + .faqp-answer {
+    padding-top: 0;
+}
+
+/* ----- Bold twin-line taglines inside an answer ----- */
+.faqp-statement {
+    margin: 4px 22px 16px 62px;
+    padding: 14px 18px;
+    border-left: 3px solid var(--lunaray-salmon);
+    background: rgba(217, 141, 128, .06);
+    border-radius: 0 10px 10px 0;
+}
+
+.faqp-statement p {
+    margin: 0;
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--lunaray-navy);
+}
+
+/* ----- Numbered process steps inside an answer ----- */
+.faqp-steps {
+    margin: 4px 22px 16px 62px;
+    padding: 0 0 0 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.faqp-steps li {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--lunaray-navy);
+}
+
+/* ----- Inline CTA link inside an answer ----- */
+.faqp-inline-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 4px 22px 18px 62px;
+}
+
+.faqp-cta-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: 12.5px;
+    color: var(--lunaray-navy);
+    background: rgba(28, 43, 69, .06);
+    border-radius: 999px;
+    padding: 9px 16px;
+    text-decoration: none;
+    transition: background .2s ease, color .2s ease;
+}
+
+.faqp-cta-link:hover {
+    background: var(--lunaray-navy);
+    color: #fff;
+}
+
+.faqp-cta-link svg {
+    flex-shrink: 0;
+}
+
+/* ----- Closing CTA panel ----- */
+.faqp-cta-panel {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    background: #fff;
+    border: 1px solid rgba(28, 43, 69, .06);
+    border-radius: 22px;
+    box-shadow: 0 10px 30px rgba(28, 43, 69, .08);
+    padding: clamp(28px, 3vw, 40px);
+    margin-top: clamp(16px, 2vw, 24px);
+}
+
+.faqp-cta-text {
+    flex: 1 1 380px;
+    max-width: 600px;
+}
+
+.faqp-cta-heading {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: clamp(22px, 2vw, 30px);
+    color: var(--lunaray-navy);
+    margin: 0 0 8px;
+}
+
+.faqp-cta-accent {
+    color: var(--lunaray-salmon-dark);
+}
+
+.faqp-cta-micro {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: 11.5px;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    color: var(--lunaray-salmon-dark);
+    margin: 0 0 10px;
+}
+
+.faqp-cta-text p:not(.faqp-cta-micro) {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 300;
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--lunaray-text);
+    margin: 0;
+}
+
+.faqp-cta-actions {
+    flex-shrink: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.faqp-cta-btn svg {
+    background: rgba(255, 255, 255, .16);
+    border-radius: 50%;
+    padding: 6px;
+    width: 22px;
+    height: 22px;
+    box-sizing: content-box;
+}
+
+.faqp-cta-btn.glass-btn-primary svg {
+    color: #fff;
+}
+
+@media (max-width: 992px) {
+    .faq-page-section {
+        padding: 48px 24px 64px;
+    }
+
+    .faqp-question {
+        padding: 16px 18px;
+        gap: 12px;
+    }
+
+    .faqp-question-text {
+        font-size: 13px;
+    }
+
+    .faqp-answer,
+    .faqp-statement,
+    .faqp-steps,
+    .faqp-inline-cta {
+        padding-left: 18px;
+    }
+
+    .faqp-cta-panel {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .faqp-cta-actions {
+        width: 100%;
+    }
+
+    .faqp-cta-actions .faqp-cta-btn {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+}

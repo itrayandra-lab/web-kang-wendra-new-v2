@@ -1,0 +1,812 @@
+    /* ----- Shared typography primitives (copied from lunaray-beranda.css)
+       This page doesn't load the homepage's stylesheet, so the handful of
+       generic hero-text classes it relies on are duplicated here rather
+       than pulling in that entire ~90KB file for a few shared rules. ----- */
+    .hero-eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-family: 'Nexa', sans-serif;
+        font-size: 12.5px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--lunaray-salmon-dark);
+        margin-bottom: 22px;
+    }
+
+    .eyebrow-dash {
+        display: inline-block;
+        width: 32px;
+        height: 2px;
+        background: var(--lunaray-salmon);
+    }
+
+    .hero-heading {
+        font-family: 'Nexa', sans-serif;
+        font-size: clamp(28px, 2.8vw, 40px);
+        line-height: 1.18;
+        color: var(--lunaray-navy);
+        margin-bottom: 16px;
+        letter-spacing: -0.5px;
+    }
+
+    .hero-heading-bold {
+        font-weight: 700;
+    }
+
+    .hero-heading-accent-bold {
+        font-weight: 700;
+        color: var(--lunaray-salmon-dark);
+    }
+
+    .hero-desc {
+        font-family: 'Nexa', sans-serif;
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--lunaray-text);
+        max-width: 460px;
+        margin-bottom: 20px;
+    }
+
+    .why-lunaray-section {
+        position: relative;
+        background: #fdfbf9;
+    }
+
+    /* ----- Part 1: intro hero (photo + overlaid text, same recipe as the
+       old why-lunaray-media/inner/text it replaces) ----- */
+    .wl-intro {
+        position: relative;
+        overflow: hidden;
+        line-height: 0;
+    }
+
+    .wl-intro-media {
+        position: relative;
+    }
+
+    .wl-intro-media img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    /* Unlike the other hero photos, the 4-person group fills almost the
+       entire frame with no natural quiet zone -- the text has to wash out
+       a chunk of it rather than just fading a corner. */
+    .wl-intro-scrim {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+        background: linear-gradient(100deg, rgba(253, 251, 249, .92) 0%, rgba(253, 251, 249, .78) 30%, rgba(253, 251, 249, .25) 46%, rgba(253, 251, 249, 0) 58%);
+    }
+
+    .wl-intro-inner {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 0 5vw;
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .wl-intro-text {
+        max-width: 600px;
+        padding: clamp(28px, 6vw, 70px) 0 40px;
+    }
+
+    .wl-intro-text .hero-desc {
+        margin-bottom: 12px;
+    }
+
+    @media (min-width: 993px) {
+        .wl-intro-text .hero-eyebrow,
+        .wl-intro-text .hero-heading,
+        .wl-intro-text .hero-desc {
+            text-shadow: 0 2px 14px rgba(255, 255, 255, .85);
+        }
+    }
+
+    @media (max-width: 992px) {
+        .wl-intro-media {
+            height: 46vh;
+            min-height: 320px;
+            position: relative;
+        }
+
+        .wl-intro-media img {
+            height: 100%;
+            object-fit: cover;
+            object-position: 25% center;
+        }
+
+        .wl-intro-media::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(253, 251, 249, 0) 60%, #fdfbf9 100%);
+        }
+
+        .wl-intro-scrim {
+            display: none;
+        }
+
+        .wl-intro-inner {
+            position: relative;
+            padding: 40px 24px;
+        }
+
+        .wl-intro-text {
+            max-width: 100%;
+            padding: 0;
+        }
+
+        .wl-intro-text .hero-desc {
+            font-size: 15.5px;
+            line-height: 1.7;
+            max-width: 100%;
+        }
+    }
+
+    /* ----- Part 1b: That Is Why ----- */
+    .wl-that-is-why {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: clamp(48px, 6vw, 80px) 5vw;
+        display: grid;
+        grid-template-columns: 1fr 1.3fr;
+        gap: 48px;
+    }
+
+    .wl-that-is-why-kicker {
+        font-family: 'Nexa', sans-serif;
+        font-weight: 700;
+        font-size: 12.5px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--lunaray-salmon-dark);
+        margin-bottom: 14px;
+    }
+
+    .wl-that-is-why-statement {
+        font-family: 'Nexa', sans-serif;
+        font-weight: 700;
+        font-size: clamp(22px, 2vw, 30px);
+        line-height: 1.3;
+        color: var(--lunaray-navy);
+        margin: 0;
+    }
+
+    .wl-that-is-why-body p,
+    .wl-that-is-why-body div {
+        font-family: 'Nexa', sans-serif;
+        font-weight: 300;
+        font-size: 15px;
+        line-height: 1.75;
+        color: var(--lunaray-text);
+        margin: 0 0 20px;
+    }
+
+    .wl-that-is-why-body p:last-child,
+    .wl-that-is-why-body div:last-child {
+        margin-bottom: 0;
+    }
+
+    @media (max-width: 992px) {
+        .wl-that-is-why {
+            grid-template-columns: 1fr;
+            gap: 20px;
+            padding: 48px 24px;
+        }
+    }
+
+    /* ----- Part 2: Before We Ask How To Make It ----- */
+    .wl-decision {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 0 5vw clamp(48px, 6vw, 80px);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(32px, 4vw, 64px);
+        align-items: center;
+    }
+
+    .wl-decision-media img {
+        width: 100%;
+        border-radius: 20px;
+        display: block;
+        box-shadow: 0 20px 50px rgba(28, 43, 69, .12);
+    }
+
+    .wl-decision-statement {
+        font-family: 'Nexa', sans-serif;
+        font-weight: 700;
+        font-size: clamp(19px, 1.7vw, 24px);
+        line-height: 1.35;
+        color: var(--lunaray-navy);
+        margin: 0 0 14px;
+    }
+
+    .wl-decision-statement--sm {
+        font-size: 15px;
+        letter-spacing: .2px;
+        margin-top: 26px;
+        margin-bottom: 0;
+    }
+
+    .wl-decision-body {
+        font-family: 'Nexa', sans-serif;
+        font-weight: 300;
+        font-size: 14.5px;
+        line-height: 1.75;
+        color: var(--lunaray-text);
+        margin: 0 0 26px;
+    }
+
+    .wl-decision-kicker {
+        font-family: 'Nexa', sans-serif;
+        font-weight: 700;
+        font-size: 12.5px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--lunaray-salmon-dark);
+        margin: 0 0 12px;
+    }
+
+    .wl-decision-sub {
+        font-family: 'Nexa', sans-serif;
+        font-weight: 700;
+        font-size: 16px;
+        line-height: 1.5;
+        color: var(--lunaray-navy);
+        margin: 0 0 14px;
+    }
+
+    @media (max-width: 992px) {
+        .wl-decision {
+            grid-template-columns: 1fr;
+            padding: 0 24px 48px;
+            gap: 28px;
+        }
+
+        .wl-decision-media {
+            order: -1;
+        }
+    }
+
+    /* ----- Part 2b: Evidence Before Formulation ----- */
+    .wl-evidence {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 0 5vw clamp(56px, 7vw, 96px);
+        display: grid;
+        grid-template-columns: .85fr 1.4fr;
+        gap: clamp(32px, 4vw, 64px);
+        align-items: center;
+    }
+
+    .wl-evidence-heading {
+        margin-bottom: 18px;
+    }
+
+    .wl-evidence-diagram {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1672 / 941;
+    }
+
+    .wl-evidence-diagram img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+    }
+
+    .wl-evidence-labels {
+        position: absolute;
+        inset: 0;
+    }
+
+    .wl-evidence-label {
+        position: absolute;
+        top: 53%;
+        width: 32%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 6px;
+    }
+
+    .wl-evidence-label:nth-child(1) { left: 1%; }
+    .wl-evidence-label:nth-child(2) { left: 34%; }
+    .wl-evidence-label:nth-child(3) { left: 67%; }
+
+    .wl-evidence-label-title {
+        font-family: 'Nexa', sans-serif;
+        font-weight: 700;
+        font-size: clamp(9px, 1vw, 13px);
+        letter-spacing: .6px;
+        text-transform: uppercase;
+        color: var(--lunaray-navy);
+    }
+
+    .wl-evidence-label-desc {
+        font-family: 'Nexa', sans-serif;
+        font-weight: 300;
+        font-size: clamp(7.5px, .78vw, 10.5px);
+        line-height: 1.4;
+        color: var(--lunaray-text);
+    }
+
+    .wl-evidence-flow {
+        position: absolute;
+        top: 74%;
+        left: 10%;
+        width: 80%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .wl-evidence-flow-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        width: 42%;
+    }
+
+    .wl-evidence-flow-title {
+        font-family: 'Nexa', sans-serif;
+        font-weight: 700;
+        font-size: clamp(9px, 1vw, 12.5px);
+        letter-spacing: .4px;
+        text-transform: uppercase;
+        color: var(--lunaray-navy);
+    }
+
+    .wl-evidence-flow-desc {
+        font-family: 'Nexa', sans-serif;
+        font-weight: 300;
+        font-size: clamp(7.5px, .75vw, 10px);
+        color: var(--lunaray-text);
+    }
+
+    .wl-evidence-flow-arrow {
+        flex-shrink: 0;
+        color: var(--lunaray-salmon-dark);
+    }
+
+    .wl-evidence-micro {
+        position: absolute;
+        top: 4%;
+        right: 1%;
+        font-family: 'Nexa', sans-serif;
+        font-weight: 700;
+        font-size: clamp(8px, .68vw, 10.5px);
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        line-height: 1.6;
+        text-align: right;
+        color: rgba(28, 43, 69, .5);
+    }
+
+    @media (max-width: 992px) {
+        .wl-evidence {
+            grid-template-columns: 1fr;
+            padding: 0 24px 56px;
+            gap: 36px;
+        }
+
+        .wl-evidence-label-desc,
+        .wl-evidence-flow-desc,
+        .wl-evidence-micro {
+            display: none;
+        }
+
+        .wl-evidence-label-title {
+            font-size: 10px;
+        }
+    }
+
+    /* ----- Part 3: Built On Decades Of Cosmetic Experience ----- */
+    .wl-legacy {
+        position: relative;
+        background: #fdfbf9;
+        padding: clamp(56px, 7vw, 96px) 0;
+    }
+
+    .wl-legacy-portrait-col {
+        display: none;
+    }
+
+    .wl-legacy-inner {
+        position: relative;
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 0 5vw;
+        display: grid;
+        grid-template-columns: 1.3fr .55fr 1fr;
+        gap: clamp(24px, 3vw, 48px);
+        align-items: center;
+    }
+
+    .wl-legacy-inner .hero-desc {
+        margin-bottom: 16px;
+    }
+
+    .wl-legacy-inner .hero-desc strong {
+        color: var(--lunaray-navy);
+        font-weight: 700;
+    }
+
+    @media (min-width: 993px) {
+        .wl-legacy-portrait-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+            grid-column: 2;
+        }
+
+        .wl-legacy-portrait {
+            width: 100%;
+            border-radius: 20px;
+            box-shadow: 0 24px 60px rgba(28, 43, 69, .16);
+            display: block;
+        }
+
+        .wl-legacy-objects {
+            width: 78%;
+            display: block;
+        }
+    }
+
+    .wl-legacy-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .wl-legacy-stat {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid rgba(28, 43, 69, .1);
+    }
+
+    .wl-legacy-stat:last-of-type {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .wl-legacy-stat svg {
+        flex-shrink: 0;
+        margin-top: 2px;
+        color: var(--lunaray-salmon-dark);
+    }
+
+    .wl-legacy-stat div {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .wl-legacy-stat-title {
+        font-family: 'Nexa', sans-serif;
+        font-weight: 700;
+        font-size: 15px;
+        color: var(--lunaray-navy);
+    }
+
+    .wl-legacy-stat-desc {
+        font-family: 'Nexa', sans-serif;
+        font-weight: 300;
+        font-size: 12.5px;
+        line-height: 1.5;
+        color: var(--lunaray-text);
+    }
+
+    .wl-legacy-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        align-self: flex-start;
+        margin-top: 6px;
+        padding: 13px 24px;
+        border-radius: 50px;
+        background: var(--lunaray-navy);
+        color: #fff;
+        font-family: 'Nexa', sans-serif;
+        font-weight: 700;
+        font-size: 13px;
+        text-decoration: none;
+        box-shadow: 0 10px 26px rgba(28, 43, 69, .22);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        transition: transform .25s ease, box-shadow .25s ease;
+    }
+
+    .wl-legacy-cta:hover {
+        color: #fff;
+        text-decoration: none;
+        transform: translateY(-2px);
+        box-shadow: 0 14px 32px rgba(28, 43, 69, .3);
+    }
+
+    .wl-legacy-tagline {
+        font-family: 'Nexa', sans-serif;
+        font-weight: 700;
+        font-size: 11px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        line-height: 1.6;
+        color: rgba(28, 43, 69, .5);
+        margin: 6px 0 0;
+    }
+
+    @media (max-width: 992px) {
+        .wl-legacy {
+            padding: 48px 0;
+        }
+
+        .wl-legacy-inner {
+            grid-template-columns: 1fr;
+            padding: 0 24px;
+            gap: 32px;
+        }
+
+        .wl-legacy-portrait-col {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            order: -1;
+        }
+
+        .wl-legacy-portrait {
+            display: block;
+            width: 54%;
+            flex-shrink: 0;
+            border-radius: 16px;
+            box-shadow: 0 16px 40px rgba(28, 43, 69, .16);
+        }
+
+        .wl-legacy-objects {
+            display: block;
+            width: 38%;
+        }
+    }
+
+    /* ----- Part 4: Experience Evolves Into Intelligence ----- */
+    .wl-ai {
+        position: relative;
+        overflow: hidden;
+        padding: clamp(56px, 7vw, 96px) 0;
+    }
+
+    .wl-ai-bg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        z-index: 0;
+    }
+
+    /* This background is the same bright, mostly-empty lab bench used
+       elsewhere on this page (no dark navy tone to lean on), so the wash
+       goes light-on-light -- opaque near the text-heavy right side,
+       fading out over the globe/card visual on the left. */
+    .wl-ai-scrim {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        background: linear-gradient(100deg, rgba(253, 251, 249, 0) 0%, rgba(253, 251, 249, .55) 45%, rgba(253, 251, 249, .85) 100%);
+    }
+
+    .wl-ai-inner {
+        position: relative;
+        z-index: 2;
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 0 5vw;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(24px, 4vw, 56px);
+        align-items: center;
+    }
+
+    .wl-ai-visual {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        max-width: 560px;
+    }
+
+    .wl-ai-globe {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 78%;
+        transform: translate(-50%, -50%);
+        display: block;
+    }
+
+    .wl-ai-card {
+        position: absolute;
+        padding: 8px 16px;
+        border-radius: 30px;
+        background: rgba(255, 255, 255, .85);
+        border: 1px solid rgba(28, 43, 69, .1);
+        box-shadow: 0 8px 20px rgba(28, 43, 69, .1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        font-family: 'Nexa', sans-serif;
+        font-weight: 700;
+        font-size: 11.5px;
+        letter-spacing: .4px;
+        text-transform: uppercase;
+        color: var(--lunaray-navy);
+        white-space: nowrap;
+    }
+
+    .wl-ai-micro {
+        position: absolute;
+        font-family: 'Nexa', sans-serif;
+        font-weight: 700;
+        font-size: 10.5px;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+        line-height: 1.5;
+        color: rgba(28, 43, 69, .45);
+    }
+
+    .wl-ai-micro--1 { top: 46%; right: -4%; text-align: left; }
+    .wl-ai-micro--2 { top: 58%; right: -8%; text-align: left; }
+    .wl-ai-micro--3 { top: 70%; right: -14%; text-align: left; }
+
+    .wl-ai-text .hero-desc {
+        margin-bottom: 16px;
+        max-width: 520px;
+    }
+
+    .wl-ai-statement {
+        font-family: 'Nexa', sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: .6px;
+        text-transform: uppercase;
+        line-height: 1.6;
+        color: var(--lunaray-navy);
+        margin-top: 22px;
+    }
+
+    @media (max-width: 992px) {
+        .wl-ai-inner {
+            grid-template-columns: 1fr;
+            padding: 0 24px;
+        }
+
+        .wl-ai-visual {
+            max-width: 320px;
+            margin: 0 auto 24px;
+        }
+
+        .wl-ai-micro--1 { right: 2%; }
+        .wl-ai-micro--2 { right: -2%; }
+        .wl-ai-micro--3 { right: -6%; font-size: 9px; }
+
+        .wl-ai-card {
+            font-size: 10px;
+            padding: 6px 12px;
+        }
+    }
+
+    /* ----- Part 5: From Better Decision To Real Products ----- */
+    .wl-real {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 0 5vw clamp(64px, 7vw, 96px);
+        display: grid;
+        grid-template-columns: 1.1fr .9fr;
+        gap: clamp(32px, 4vw, 64px);
+        align-items: center;
+    }
+
+    .wl-real-text .hero-heading {
+        margin-top: clamp(24px, 4vw, 56px);
+    }
+
+    .wl-real-text .hero-desc {
+        margin-bottom: 14px;
+    }
+
+    .wl-real-statement {
+        font-family: 'Nexa', sans-serif;
+        font-weight: 700;
+        font-size: clamp(18px, 1.6vw, 22px);
+        line-height: 1.4;
+        color: var(--lunaray-navy);
+        margin: 8px 0 20px;
+    }
+
+    .wl-real-badges {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px 24px;
+        margin: 28px 0 24px;
+        padding-top: 24px;
+        border-top: 1px solid rgba(28, 43, 69, .1);
+    }
+
+    .wl-real-badge {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .wl-real-badge svg {
+        flex-shrink: 0;
+        color: var(--lunaray-salmon-dark);
+    }
+
+    .wl-real-badge span {
+        font-family: 'Nexa', sans-serif;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: .3px;
+        color: var(--lunaray-navy);
+        line-height: 1.3;
+    }
+
+    .wl-real-tagline {
+        font-family: 'Nexa', sans-serif;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        color: rgba(28, 43, 69, .5);
+        margin: 0;
+    }
+
+    .wl-real-media img {
+        width: 100%;
+        border-radius: 20px;
+        display: block;
+        box-shadow: 0 24px 60px rgba(28, 43, 69, .18);
+    }
+
+    @media (max-width: 992px) {
+        .wl-real {
+            grid-template-columns: 1fr;
+            padding: 0 24px 56px;
+            gap: 28px;
+        }
+
+        .wl-real-media {
+            order: -1;
+            max-width: 360px;
+            margin: 0 auto;
+        }
+
+        .wl-real-badges {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .wl-real-badges {
+            grid-template-columns: 1fr;
+        }
+    }
+

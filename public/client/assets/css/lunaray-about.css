@@ -1,0 +1,489 @@
+/* ===== About page — builds on lunaray-packaging.css + lunaray-ai.css ===== */
+
+.ab-page {
+    background: #f6f1ee;
+}
+
+.ab-page .pk-frame:not(.pk-dark) .pk-h,
+.ab-page .pk-frame:not(.pk-dark) .pk-eyebrow {
+    color: #16204a;
+}
+
+.ab-page .pk-frame:not(.pk-dark) .pk-acc {
+    color: #b0664c;
+}
+
+.ab-h > span {
+    white-space: nowrap;
+}
+
+.ab-h--tight {
+    line-height: 1.02;
+}
+
+.ab-h .ab-h-sub {
+    margin-top: calc(10 * var(--u));
+    font-size: .56em;
+    letter-spacing: .06em;
+}
+
+.ab-eyebrow::after {
+    content: '';
+    width: calc(80 * var(--u));
+    height: 1px;
+    background: currentColor;
+    opacity: .6;
+}
+
+.ab-eyebrow {
+    font-size: calc(14 * var(--u));
+    letter-spacing: .28em;
+}
+
+.ab-page .ab-eyebrow--rust {
+    color: #b0664c !important;
+}
+
+.ab-page .ab-eyebrow--rose {
+    color: var(--ai-rose) !important;
+}
+
+.ab-eyebrow--plain {
+    font-size: calc(12 * var(--u));
+    letter-spacing: .32em;
+}
+
+.ab-tagline {
+    margin: 0 0 calc(18 * var(--u));
+    font-family: var(--font-display);
+    font-size-adjust: var(--display-adjust);
+    font-size: calc(26 * var(--u));
+    line-height: 1.2;
+    color: #16204a;
+}
+
+.ab-w {
+    max-width: calc(560 * var(--u));
+}
+
+.ab-w2 {
+    max-width: calc(520 * var(--u));
+}
+
+.ab-w3 {
+    max-width: calc(600 * var(--u));
+}
+
+.ab-page .pk-frame:not(.pk-dark) .pk-p {
+    color: #2b3252;
+}
+
+.ab-support {
+    margin: 0;
+    font-family: 'Nexa', sans-serif;
+    font-size: calc(15 * var(--u));
+    line-height: 1.6;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: #b0664c;
+}
+
+.ab-support--rose {
+    color: var(--ai-rose);
+}
+
+/* ----- 02 · service strip ----- */
+.ab-strip {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    list-style: none;
+    padding: calc(18 * var(--u)) calc(20 * var(--u));
+    border: 1px solid rgba(255, 255, 255, .9);
+    border-radius: calc(28 * var(--u));
+    background: rgba(255, 255, 255, .55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 18px 40px -26px rgba(22, 32, 74, .45);
+}
+
+.ab-strip li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(10 * var(--u));
+    padding: 0 calc(8 * var(--u));
+    border-left: 1px solid rgba(22, 32, 74, .14);
+    text-align: center;
+    color: #16204a;
+}
+
+.ab-strip li:first-child {
+    border-left: 0;
+}
+
+.ab-strip .cap-icon {
+    width: calc(34 * var(--u));
+    height: calc(34 * var(--u));
+    color: #b0664c;
+}
+
+.ab-strip span {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: calc(12.5 * var(--u));
+    line-height: 1.3;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+/* ----- bubbles on photo ----- */
+.ab-bubble {
+    font-family: var(--font-display);
+    font-size-adjust: var(--display-adjust);
+    font-size: calc(19 * var(--u));
+    line-height: 1.15;
+    text-transform: uppercase;
+    color: #16204a;
+    text-shadow: 0 0 calc(12 * var(--u)) rgba(255, 255, 255, .95);
+}
+
+.ab-bubble em {
+    display: block;
+    font-style: normal;
+    font-size: calc(30 * var(--u));
+    color: #b0664c;
+}
+
+.ab-bubble--sm {
+    font-size: calc(15 * var(--u));
+}
+
+.ab-core {
+    font-family: 'Nexa', sans-serif;
+    font-size: calc(24 * var(--u));
+    letter-spacing: .4em;
+    text-align: center;
+    text-transform: uppercase;
+    color: #16204a;
+}
+
+/* ----- glass cards row ----- */
+.ab-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: calc(18 * var(--u));
+    list-style: none;
+    padding: 0;
+}
+
+.ab-cards li {
+    padding: calc(18 * var(--u)) calc(24 * var(--u));
+    border: 1px solid rgba(255, 255, 255, .95);
+    border-radius: calc(18 * var(--u));
+    background: rgba(255, 255, 255, .6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 18px 40px -28px rgba(22, 32, 74, .5);
+}
+
+.ab-card-head {
+    display: flex;
+    align-items: center;
+    gap: calc(10 * var(--u));
+    margin-bottom: calc(10 * var(--u));
+}
+
+.ab-card-head em {
+    font-family: var(--font-display);
+    font-size-adjust: var(--display-adjust);
+    font-style: normal;
+    font-size: calc(34 * var(--u));
+    line-height: 1;
+    color: #b0664c;
+}
+
+.ab-card-head strong {
+    flex: 1;
+    font-family: var(--font-display);
+    font-size-adjust: var(--display-adjust);
+    font-weight: 500;
+    font-size: calc(19 * var(--u));
+    text-transform: uppercase;
+    color: #16204a;
+}
+
+.ab-card-head .cap-icon,
+.ab-role-icon .cap-icon {
+    width: calc(22 * var(--u));
+    height: calc(22 * var(--u));
+    padding: calc(10 * var(--u));
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .85);
+    color: #b0664c;
+    box-sizing: content-box;
+    flex-shrink: 0;
+}
+
+.ab-cards p {
+    margin: 0;
+    font-family: 'Nexa', sans-serif;
+    font-size: calc(14 * var(--u));
+    line-height: 1.5;
+    color: #2b3252;
+}
+
+.ab-cards--role li {
+    display: flex;
+    gap: calc(16 * var(--u));
+    align-items: flex-start;
+}
+
+.ab-role-icon .cap-icon {
+    width: calc(28 * var(--u));
+    height: calc(28 * var(--u));
+    padding: calc(14 * var(--u));
+}
+
+.ab-cards--role strong {
+    display: block;
+    margin-bottom: calc(6 * var(--u));
+    font-family: var(--font-display);
+    font-size-adjust: var(--display-adjust);
+    font-weight: 500;
+    font-size: calc(19 * var(--u));
+    line-height: 1.15;
+    text-transform: uppercase;
+    color: #16204a;
+}
+
+/* ----- 05 · journey ----- */
+.ab-milestone {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: calc(15 * var(--u));
+    line-height: 1.45;
+    letter-spacing: .2em;
+    text-align: center;
+    text-transform: uppercase;
+    color: #f1ecf2;
+}
+
+.ab-milestone::after {
+    content: '';
+    display: block;
+    width: calc(40 * var(--u));
+    height: 2px;
+    margin: calc(10 * var(--u)) auto 0;
+    background: var(--ai-rose);
+}
+
+/* ----- 06 · facility ----- */
+.ab-closing > span {
+    white-space: nowrap;
+}
+
+.ab-page .pk-dark .ab-closing {
+    color: var(--ai-rose);
+}
+
+.ab-flow {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: calc(48 * var(--u));
+    list-style: none;
+    padding: 0;
+}
+
+.ab-flow li {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: calc(14 * var(--u));
+    height: calc(122 * var(--u));
+    border: 1px solid rgba(255, 255, 255, .6);
+    border-radius: calc(16 * var(--u));
+    background: rgba(20, 30, 70, .35);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #fff;
+}
+
+.ab-flow li + li::before {
+    content: '';
+    position: absolute;
+    left: calc(-44 * var(--u));
+    top: 50%;
+    width: calc(40 * var(--u));
+    height: 1px;
+    background: var(--ai-rose);
+}
+
+.ab-flow .cap-icon {
+    width: calc(38 * var(--u));
+    height: calc(38 * var(--u));
+}
+
+.ab-flow span {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: calc(13 * var(--u));
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+/* ----- 07 · proof panels ----- */
+.ab-proof h3 {
+    margin: 0 0 calc(10 * var(--u));
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: calc(15 * var(--u));
+    line-height: 1.25;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: #fff;
+    text-shadow: 0 1px 10px rgba(10, 16, 40, .7);
+}
+
+.ab-proof p {
+    margin: 0;
+    font-family: 'Nexa', sans-serif;
+    font-size: calc(12.5 * var(--u));
+    line-height: 1.4;
+    color: rgba(255, 255, 255, .92);
+    text-shadow: 0 1px 10px rgba(10, 16, 40, .8);
+}
+
+@media (max-width: 1100px) {
+    .ab-h > span,
+    .ab-closing > span {
+        white-space: normal;
+    }
+
+    .ab-eyebrow,
+    .ab-eyebrow--plain {
+        font-size: 12px;
+        letter-spacing: .2em;
+    }
+
+    .ab-eyebrow::after {
+        width: 32px;
+    }
+
+    .ab-tagline {
+        font-size: 21px;
+    }
+
+    .ab-w,
+    .ab-w2,
+    .ab-w3 {
+        max-width: none;
+    }
+
+    .ab-support {
+        font-size: 13px;
+        letter-spacing: .18em;
+    }
+
+    .ab-strip {
+        grid-template-columns: repeat(3, 1fr);
+        row-gap: 16px;
+        padding: 18px 10px;
+        border-radius: 20px;
+        background: #fff;
+    }
+
+    .ab-strip li:nth-child(3n + 1) {
+        border-left: 0;
+    }
+
+    .ab-strip .cap-icon {
+        width: 26px;
+        height: 26px;
+    }
+
+    .ab-strip span {
+        font-size: 11px;
+    }
+
+    .ab-cards,
+    .ab-flow {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .ab-cards li {
+        padding: 16px 18px;
+        border-radius: 16px;
+        background: #fff;
+    }
+
+    .ab-card-head em {
+        font-size: 28px;
+    }
+
+    .ab-card-head strong,
+    .ab-cards--role strong {
+        font-size: 19px;
+    }
+
+    .ab-card-head .cap-icon,
+    .ab-role-icon .cap-icon {
+        width: 22px;
+        height: 22px;
+        padding: 10px;
+    }
+
+    .ab-cards p {
+        font-size: 14.5px;
+    }
+
+    .ab-milestone {
+        font-size: 13px;
+        text-align: left;
+    }
+
+    .ab-milestone::after {
+        margin-left: 0;
+    }
+
+    .ab-flow li {
+        flex-direction: row;
+        justify-content: flex-start;
+        height: auto;
+        padding: 14px 18px;
+    }
+
+    .ab-flow li + li::before {
+        display: none;
+    }
+
+    .ab-flow .cap-icon {
+        width: 26px;
+        height: 26px;
+    }
+
+    .ab-proof {
+        padding: 16px 18px;
+        border: 1px solid rgba(255, 255, 255, .16);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, .05);
+    }
+
+    .ab-proof em {
+        font-family: 'Nexa', sans-serif;
+        font-style: normal;
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--ai-rose);
+    }
+
+    .ab-proof h3 {
+        font-size: 14.5px;
+    }
+
+    .ab-proof p {
+        font-size: 14px;
+    }
+}

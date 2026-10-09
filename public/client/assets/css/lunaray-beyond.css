@@ -1,0 +1,824 @@
+/* ===== Capabilities / Beyond Cosmetics page =====
+   Builds on lunaray-capabilities.css (.cap-page tokens, .cap-wrap, .cap-eyebrow,
+   .cap-title, .cap-kicker, .cap-body, .cap-btn). Everything page-specific is
+   prefixed .byd-. */
+
+.byd-page {
+    --byd-navy: #1c2b45;
+    --byd-rose: #c97768;
+    /* One flat, uniform tone for the whole page (hero, the cards/footer strip,
+       and the gaps between full-bleed panels) so nothing reads as a seam once
+       the photos — each already warm-toned — sit against it. */
+    background: #f8f4f1;
+}
+
+/* ----- Hero: one section over one photo, like the design. The headline
+   column sits top-left over the photo's empty side; the category cards and
+   brand statement bar sit on the photo's floor area below the products. The
+   photo is anchored top-right so the products stay in view as the section
+   grows or shrinks with its content. ----- */
+.byd-hero {
+    --byd-rust: #b0573f;
+    position: relative;
+    overflow: hidden;
+    background: #f8f4f1;
+}
+
+.byd-hero-media {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    /* The photo's own aspect ratio (1672x941): past this height the cover
+       crop would start zooming in and push the products under the headline,
+       so any extra section height just continues the page tone below it. */
+    height: 56.28vw;
+    max-height: 100%;
+    z-index: 0;
+}
+
+.byd-hero-media::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 22%;
+    background: linear-gradient(180deg, rgba(248, 244, 241, 0), #f8f4f1);
+}
+
+.byd-hero-media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: right top;
+}
+
+.byd-hero-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+        linear-gradient(90deg, rgba(248, 244, 241, .78) 0%, rgba(248, 244, 241, .55) 30%, rgba(248, 244, 241, 0) 48%),
+        linear-gradient(180deg, rgba(248, 244, 241, 0) 55%, rgba(248, 244, 241, .35) 100%);
+}
+
+.byd-hero-inner {
+    position: relative;
+    z-index: 2;
+    padding: clamp(24px, 2.6vw, 48px) clamp(20px, 3.4vw, 72px) clamp(20px, 2vw, 36px);
+}
+
+.byd-hero-text {
+    max-width: min(640px, 44%);
+}
+
+.byd-hero-top {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    margin-bottom: clamp(26px, 3.4vw, 56px);
+}
+
+.byd-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.byd-brand strong {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 400;
+    font-size: clamp(16px, 1.35vw, 22px);
+    line-height: 1;
+    letter-spacing: .38em;
+    color: var(--byd-navy);
+}
+
+.byd-brand span {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: 9.5px;
+    letter-spacing: 1.6px;
+    color: var(--byd-navy);
+    white-space: nowrap;
+}
+
+.byd-hero-top-rule {
+    width: 1px;
+    height: 34px;
+    background: rgba(28, 43, 69, .35);
+}
+
+.byd-hero-eyebrow {
+    max-width: 24em;
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    line-height: 1.7;
+    letter-spacing: 2px;
+    color: var(--byd-navy);
+}
+
+.byd-hero-title {
+    font-family: var(--font-display);
+    font-size-adjust: var(--display-adjust);
+    font-weight: 600;
+    font-size: clamp(40px, 4.1vw, 74px);
+    line-height: 1.02;
+    letter-spacing: -.02em;
+    color: var(--byd-navy);
+    margin: 0 0 clamp(14px, 1.4vw, 22px);
+}
+
+.byd-hero-title span {
+    display: block;
+    white-space: nowrap;
+}
+
+.byd-hero-accent {
+    color: var(--byd-rust);
+}
+
+.byd-hero-kicker {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: clamp(14px, 1.15vw, 19px);
+    line-height: 1.4;
+    color: var(--byd-navy);
+    margin: 0 0 8px;
+}
+
+.byd-hero-body {
+    font-family: 'Nexa', sans-serif;
+    font-size: clamp(13.5px, 1.05vw, 17px);
+    line-height: 1.55;
+    color: var(--byd-navy);
+    max-width: 31em;
+    margin: 0;
+}
+
+/* Category cards: frosted glass over the photo's floor */
+.byd-cats {
+    list-style: none;
+    margin: clamp(28px, 3.6vw, 60px) 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: clamp(10px, 1vw, 16px);
+}
+
+.byd-cats li {
+    padding: clamp(18px, 1.6vw, 26px) 14px;
+    border-radius: 18px;
+    text-align: center;
+    background: rgba(255, 255, 255, .34);
+    border: 1px solid rgba(255, 255, 255, .85);
+    box-shadow: inset 0 0 0 1px rgba(214, 164, 150, .22), 0 18px 40px -30px rgba(28, 43, 69, .45);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.byd-bubble {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 14px;
+    color: var(--byd-navy);
+}
+
+.byd-bubble .cap-icon {
+    width: clamp(34px, 2.8vw, 46px);
+    height: clamp(34px, 2.8vw, 46px);
+}
+
+.byd-cats strong {
+    display: block;
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: clamp(11.5px, .95vw, 14px);
+    line-height: 1.4;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--byd-navy);
+}
+
+.byd-cat-line {
+    display: block;
+    width: 34px;
+    height: 1px;
+    margin: 12px auto;
+    background: rgba(28, 43, 69, .35);
+}
+
+.byd-cats li > span:last-child,
+.byd-cat-link > span:last-child {
+    display: block;
+    font-family: 'Nexa', sans-serif;
+    font-size: clamp(12px, .95vw, 14.5px);
+    line-height: 1.45;
+    color: var(--byd-navy);
+}
+
+/* Brand statement bar along the bottom of the photo */
+.byd-footer-bar {
+    display: grid;
+    grid-template-columns: auto auto 1fr auto;
+    align-items: center;
+    gap: clamp(18px, 2.4vw, 44px);
+    margin-top: clamp(22px, 2.6vw, 44px);
+}
+
+.byd-tagline {
+    margin: 0;
+    padding-right: clamp(18px, 2.4vw, 44px);
+    border-right: 1px solid rgba(28, 43, 69, .3);
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: 10.5px;
+    line-height: 1.8;
+    letter-spacing: 1.6px;
+    color: var(--byd-navy);
+}
+
+.byd-tagline span {
+    display: block;
+}
+
+.byd-footer-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding-right: clamp(18px, 2.4vw, 44px);
+    border-right: 1px solid rgba(28, 43, 69, .3);
+    color: var(--byd-navy);
+    white-space: nowrap;
+}
+
+.byd-footer-brand strong {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 400;
+    font-size: 18px;
+    letter-spacing: .38em;
+    margin-right: -.38em;
+}
+
+.byd-footer-brand span {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: 8.5px;
+    letter-spacing: 1.4px;
+}
+
+.byd-stats {
+    list-style: none;
+    margin: 0;
+    padding: 0 clamp(18px, 2.4vw, 44px) 0 0;
+    border-right: 1px solid rgba(28, 43, 69, .3);
+    display: flex;
+    justify-content: space-around;
+    gap: 18px;
+}
+
+.byd-stats li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+}
+
+.byd-stat-icon {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    color: var(--byd-navy);
+}
+
+.byd-stats span {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: 9.5px;
+    line-height: 1.4;
+    letter-spacing: .8px;
+    color: var(--byd-navy);
+    white-space: nowrap;
+}
+
+.byd-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 34px;
+    border-radius: 999px;
+    background: var(--byd-rust);
+    color: #fbe9e2;
+    font-family: 'Nexa', sans-serif;
+    font-size: 13px;
+    letter-spacing: .22em;
+    text-decoration: none;
+    white-space: nowrap;
+    box-shadow: 0 14px 30px -16px rgba(176, 87, 63, .8);
+    transition: transform .25s ease, filter .25s ease;
+}
+
+.byd-cta:hover {
+    color: #fff;
+    text-decoration: none;
+    transform: translateY(-2px);
+    filter: brightness(1.06);
+}
+
+.byd-cat-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}
+
+.byd-cat-link:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
+.byd-cats li:has(.byd-cat-link) {
+    padding: 0;
+    transition: transform .25s ease, background .25s ease;
+}
+
+.byd-cats li:has(.byd-cat-link:hover) {
+    transform: translateY(-3px);
+    background: rgba(255, 255, 255, .55);
+}
+
+.byd-cats li:has(.byd-cat-link) .byd-cat-link {
+    height: 100%;
+    padding: clamp(18px, 1.6vw, 26px) 14px;
+}
+
+/* ----- Panel sections: true full-bleed scene photo (edge-to-edge, same
+   treatment as the site's home hero — no card border/shadow of our own since
+   the photo already draws its own glass-panel frame). The section has no
+   fixed height; the photo scales at width:100% and the section follows its
+   aspect ratio, so the percentages below always line up with the drawn
+   panel/pill exactly. A tighter portrait crop (the --byd-mpanel and --byd-mcta
+   variables) swaps in below 900px, where the desktop photo's panel would shrink to a
+   sliver too small to hold real copy. ----- */
+.byd-panel-section {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+.byd-panel-media {
+    display: block;
+    width: 100%;
+}
+
+.byd-panel-media img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.byd-panel-content {
+    position: absolute;
+    top: var(--byd-panel-top);
+    right: var(--byd-panel-right);
+    bottom: var(--byd-panel-bottom);
+    left: var(--byd-panel-left);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 3% 6.5%;
+    overflow: hidden;
+}
+
+.byd-panel-content .cap-eyebrow {
+    font-size: clamp(8px, .68vw, 12px);
+    margin-bottom: clamp(6px, 1vw, 16px);
+    gap: 8px;
+}
+
+.byd-panel-content .cap-eyebrow-dash {
+    width: 20px;
+}
+
+.byd-panel-title {
+    font-family: var(--font-display);
+    font-size-adjust: var(--display-adjust);
+    font-weight: 700;
+    font-size: clamp(22px, 3.1vw, 52px);
+    line-height: 1.05;
+    letter-spacing: .5px;
+    color: var(--byd-navy);
+    margin: 0 0 clamp(8px, 1.4vw, 20px);
+}
+
+.byd-panel-title span {
+    display: block;
+}
+
+.byd-panel-accent {
+    color: var(--byd-rose);
+}
+
+.byd-panel-kicker {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: clamp(8.5px, .78vw, 11.5px);
+    letter-spacing: 1.6px;
+    color: var(--byd-rose);
+    margin: 0 0 clamp(4px, .7vw, 10px);
+}
+
+.byd-panel-subhead {
+    font-family: var(--font-display);
+    font-size-adjust: var(--display-adjust);
+    font-weight: 600;
+    font-size: clamp(12px, 1.35vw, 24px);
+    line-height: 1.35;
+    color: var(--byd-navy);
+    margin: 0 0 clamp(6px, 1vw, 16px);
+}
+
+.byd-panel-body {
+    font-family: 'Nexa', sans-serif;
+    font-size: clamp(9.5px, .95vw, 14.5px);
+    line-height: 1.6;
+    color: var(--byd-navy);
+    opacity: .82;
+    margin: 0 0 clamp(4px, .8vw, 10px);
+}
+
+.byd-panel-tags {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: clamp(8.5px, .82vw, 12px);
+    letter-spacing: .8px;
+    line-height: 1.6;
+    color: var(--byd-navy);
+    margin: clamp(4px, .8vw, 10px) 0;
+}
+
+.byd-panel-note {
+    font-family: 'Nexa', sans-serif;
+    font-size: clamp(8px, .72vw, 11px);
+    line-height: 1.5;
+    color: var(--byd-navy);
+    opacity: .62;
+    margin: clamp(6px, 1vw, 14px) 0 0;
+}
+
+.byd-panel-cta {
+    position: absolute;
+    top: var(--byd-cta-top);
+    right: var(--byd-cta-right);
+    bottom: var(--byd-cta-bottom);
+    left: var(--byd-cta-left);
+}
+
+/* The pill outline is already drawn into the photo; this link only holds the
+   label and click target (full pill size) and never paints its own
+   background right to that edge, so there's no second border to mismatch
+   against the real one. The hover fill lives on an inset ::before instead,
+   sitting safely inside the drawn outline. */
+.byd-panel-cta a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(6px, .8vw, 12px);
+    width: 100%;
+    height: 100%;
+    color: var(--byd-navy);
+    text-decoration: none;
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    font-size: clamp(9px, .85vw, 13px);
+    letter-spacing: .8px;
+    transition: color .25s ease;
+}
+
+.byd-panel-cta a::before {
+    content: '';
+    position: absolute;
+    inset: 14% 3%;
+    border-radius: 999px;
+    background: var(--byd-navy);
+    opacity: 0;
+    transition: opacity .25s ease;
+}
+
+.byd-panel-cta a > * {
+    position: relative;
+}
+
+.byd-panel-cta a:hover {
+    color: #fff;
+    text-decoration: none;
+}
+
+.byd-panel-cta a:hover::before {
+    opacity: 1;
+}
+
+.byd-panel-cta .cap-btn-icon {
+    width: clamp(11px, .9vw, 16px);
+    height: clamp(11px, .9vw, 16px);
+    flex-shrink: 0;
+}
+
+/* Below 900px, swap to the portrait crop's own percentages (set inline
+   alongside the desktop ones) — the <picture> source above already swapped
+   the image itself at the same breakpoint. */
+@media (max-width: 899px) {
+    .byd-panel-content {
+        top: var(--byd-mpanel-top);
+        right: var(--byd-mpanel-right);
+        bottom: var(--byd-mpanel-bottom);
+        left: var(--byd-mpanel-left);
+        padding: 5% 7%;
+    }
+
+    .byd-panel-cta {
+        top: var(--byd-mcta-top);
+        right: var(--byd-mcta-right);
+        bottom: var(--byd-mcta-bottom);
+        left: var(--byd-mcta-left);
+    }
+
+    .byd-panel-title {
+        font-size: clamp(20px, 6.2vw, 30px);
+    }
+
+    .byd-panel-subhead {
+        font-size: clamp(11px, 3vw, 15px);
+    }
+
+    .byd-panel-body {
+        font-size: clamp(9.5px, 2.5vw, 12px);
+        line-height: 1.45;
+    }
+
+    .byd-panel-content .cap-eyebrow {
+        font-size: clamp(7.5px, 1.9vw, 9.5px);
+    }
+
+    .byd-panel-cta a {
+        font-size: clamp(8.5px, 2.3vw, 11px);
+        letter-spacing: .4px;
+        white-space: normal;
+        text-align: center;
+        padding: 0 4%;
+    }
+
+    .byd-panel-kicker {
+        font-size: clamp(7px, 1.8vw, 9px);
+    }
+
+    .byd-panel-tags {
+        font-size: clamp(7px, 1.8vw, 9.5px);
+        line-height: 1.5;
+    }
+
+    .byd-panel-note {
+        font-size: clamp(6.5px, 1.6vw, 8.5px);
+    }
+}
+
+/* ----- Responsive ----- */
+@media (max-width: 1100px) {
+    .byd-cats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1320px) {
+    .byd-cats li:has(.byd-cat-link) .byd-cat-link {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .byd-cats strong {
+        letter-spacing: .06em;
+    }
+
+    .byd-footer-bar {
+        grid-template-columns: auto auto 1fr;
+        row-gap: 22px;
+    }
+
+    .byd-stats {
+        padding-right: 0;
+        border-right: 0;
+    }
+
+    .byd-cta {
+        grid-column: 1 / -1;
+        justify-self: end;
+    }
+}
+
+@media (max-width: 1100px) {
+    /* Same crop-and-fade treatment as .lunaray-hero on mobile: the photo
+       becomes a banner with a bottom fade and everything else flows below
+       it, pulled up into the fade. */
+    .byd-hero-media {
+        position: relative;
+        height: 56vh;
+        min-height: 340px;
+        max-height: none;
+    }
+
+    .byd-hero-media::after {
+        display: none;
+    }
+
+    .byd-hero-media img {
+        object-position: 72% center;
+    }
+
+    .byd-hero-scrim {
+        bottom: auto;
+        height: 56vh;
+        min-height: 340px;
+        background: linear-gradient(180deg, rgba(248, 244, 241, 0) 45%, #f8f4f1 97%);
+    }
+
+    .byd-hero-inner {
+        margin-top: -64px;
+        padding: 0 24px 40px;
+    }
+
+    .byd-hero-text {
+        max-width: 100%;
+    }
+
+    .byd-hero-top {
+        margin-bottom: 22px;
+    }
+
+    .byd-hero-title {
+        font-size: clamp(34px, 8.6vw, 60px);
+    }
+
+    .byd-hero-title span {
+        white-space: normal;
+    }
+
+    .byd-hero-body {
+        max-width: none;
+    }
+
+    .byd-cats li {
+        background: rgba(255, 255, 255, .7);
+    }
+
+    .byd-footer-bar {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+        row-gap: 24px;
+    }
+
+    .byd-tagline,
+    .byd-footer-brand {
+        padding-right: 0;
+        border-right: 0;
+    }
+
+    .byd-stats {
+        width: 100%;
+    }
+
+    .byd-cta {
+        justify-self: stretch;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 767px) {
+    .byd-cats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .byd-hero-top {
+        gap: 14px;
+    }
+
+    .byd-hero-eyebrow {
+        font-size: 9.5px;
+        letter-spacing: 1.4px;
+    }
+
+    .byd-cats li:has(.byd-cat-link) .byd-cat-link {
+        padding: 16px 10px;
+    }
+
+    .byd-cta {
+        padding: 15px 20px;
+        font-size: 11.5px;
+        letter-spacing: .14em;
+    }
+}
+
+/* ----- Closing banner: One Development Ecosystem -----
+   Reuses .byd-panel-content/.byd-panel-cta positioning but centered, with
+   its own bounds (--byd-final-*) since the empty gap sits above the pill in
+   the middle of the frame rather than to one side. Category labels under
+   each product cluster and the corner taglines are baked into the photo. ----- */
+.byd-final-content {
+    top: var(--byd-final-top);
+    right: var(--byd-final-right);
+    bottom: var(--byd-final-bottom);
+    left: var(--byd-final-left);
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+}
+
+.byd-final-title {
+    font-size: clamp(20px, 2.5vw, 40px);
+}
+
+.byd-final-content .byd-panel-subhead {
+    margin: 0;
+}
+
+.byd-final-cta {
+    top: var(--byd-final-cta-top);
+    right: var(--byd-final-cta-right);
+    bottom: var(--byd-final-cta-bottom);
+    left: var(--byd-final-cta-left);
+}
+
+.byd-final-note-wrap {
+    padding: clamp(32px, 4.5vw, 56px) 5vw clamp(48px, 6vw, 80px);
+    text-align: center;
+}
+
+.byd-final-body {
+    max-width: 760px;
+    margin: 0 auto clamp(6px, .9vw, 14px);
+    text-align: center;
+}
+
+.byd-final-note {
+    font-family: 'Nexa', sans-serif;
+    font-size: 12px;
+    color: var(--byd-navy);
+    opacity: .6;
+    margin: clamp(10px, 1.5vw, 20px) 0 0;
+}
+
+.byd-final-stack {
+    display: none;
+}
+
+@media (max-width: 899px) {
+    .byd-final-title {
+        font-size: clamp(18px, 5.5vw, 26px);
+    }
+
+    .byd-final-content .byd-panel-subhead {
+        font-size: clamp(10px, 2.8vw, 13px);
+    }
+
+    /* The centered gap is too short once the whole banner shrinks to phone
+       width — cropping tighter (like the side panels do) wouldn't help here
+       since it would shrink the gap's height along with everything else. So
+       the overlay steps aside for a plain photo with the same copy below it. */
+    .byd-final-content,
+    .byd-final-cta {
+        display: none;
+    }
+
+    .byd-final-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 14px;
+        position: relative;
+        padding: 24px 20px;
+    }
+
+    .byd-final-stack .byd-final-title {
+        margin: 0;
+    }
+
+    .byd-final-stack .byd-panel-subhead {
+        margin: 0;
+    }
+}
+
+@media (max-width: 767px) {
+    .byd-final-body {
+        font-size: 14px;
+    }
+}

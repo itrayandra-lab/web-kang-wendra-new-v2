@@ -1,0 +1,313 @@
+<?php
+
+use App\Http\Middleware\IsActive;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\AdsController;
+use App\Http\Controllers\Admin\HomeController;
+use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\PostCategories;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Admin\AlbumController;
+use App\Http\Controllers\Admin\MenusController;
+use App\Http\Controllers\Admin\PostsController;
+use App\Http\Controllers\Admin\VideosController;
+use App\Http\Controllers\Admin\UploadImageEditor;
+use App\Http\Controllers\Admin\PostTagsController;
+use App\Http\Controllers\Client\InterfaceController;
+use App\Http\Controllers\Client\ArayChatController;
+use App\Http\Controllers\Admin\DomainShareController;
+use App\Http\Controllers\Admin\InformationController;
+use App\Http\Controllers\Admin\WebIdentityController;
+use App\Http\Controllers\Admin\RolePermissionController;
+use App\Http\Controllers\Admin\RefArticleController;
+use App\Http\Controllers\Admin\RssController;
+use App\Http\Controllers\Admin\PublishScheduleController;
+use App\Http\Controllers\Admin\ScrapingController;
+use App\Http\Controllers\Admin\ScrapeResultController;
+
+# Auth
+Route::group(['prefix' => 'portal', 'controller' => LoginController::class], function () {
+    Route::get('/login', 'showLoginForm')->name('login');
+    Route::post('/login', 'login')->name('portal.login.submit');
+    Route::post('/logout', 'logout')->name('portal.logout');
+});
+
+# Portal
+Route::group(['prefix' => 'portal', 'middleware' => ['auth']], function () {
+
+    Route::get('home', [HomeController::class, 'index'])->name('admin.dashboard');
+
+    # Image Handler
+    Route::group(['prefix' => 'image', 'controller' => UploadImageEditor::class], function () {
+        Route::post('upload-image', 'uploadImage')->name('uploadImage')->middleware('throttle:20,1');
+        Route::post('delete-image', 'deleteImage')->name('deleteImage')->middleware('throttle:10,1');
+    });
+
+    # User management
+    Route::group(['prefix' => 'users', 'controller' => UserController::class], function () {
+        Route::get('/', 'index')->name('users.index')->middleware('permission:view users');
+        Route::get('/create', 'create')->name('users.create')->middleware('permission:create users');
+        Route::post('/', 'store')->name('users.store')->middleware('permission:create users');
+        Route::get('/{user}/edit', 'edit')->name('users.edit')->middleware('permission:edit users');
+        Route::put('/{user}', 'update')->name('users.update')->middleware('permission:edit users');
+        Route::delete('/{user}', 'destroy')->name('users.destroy')->middleware('permission:delete users');
+
+        #update personal user
+        Route::get('profil', 'profil')->name('users.profil');
+        Route::put('profil/update', 'profilUpdate')->name('users.profilUpdate');
+    });
+
+    # Role management
+    Route::group(['prefix' => 'roles', 'controller' => RolePermissionController::class, 'middleware' => ['auth', 'permission:manage roles']], function () {
+        Route::get('/', 'indexRoles')->name('roles.index');
+        Route::get('/create', 'createRole')->name('roles.create');
+        Route::post('/', 'storeRole')->name('roles.store');
+        Route::get('/{role}/edit', 'editRole')->name('roles.edit');
+        Route::put('/{role}', 'updateRole')->name('roles.update');
+        Route::delete('/{role}', 'destroyRole')->name('roles.destroy');
+    });
+
+    # Permission management
+    Route::group(['prefix' => 'permissions', 'controller' => RolePermissionController::class, 'middleware' => ['auth', 'permission:manage permissions']], function () {
+        Route::get('/', 'indexPermissions')->name('permissions.index');
+        Route::get('/create', 'createPermission')->name('permissions.create');
+        Route::post('/', 'storePermission')->name('permissions.store');
+        Route::get('/{permission}/edit', 'editPermission')->name('permissions.edit');
+        Route::put('/{permission}', 'updatePermission')->name('permissions.update');
+        Route::delete('/{permission}', 'destroyPermission')->name('permissions.destroy');
+    });
+
+    # Identity Web
+    Route::group(['prefix' => 'web-identities', 'controller' => WebIdentityController::class, 'middleware' => ['auth', 'permission:manage web identities']], function () {
+        Route::get('/', 'index')->name('web-identity.index');
+        Route::post('/', 'storeOrUpdate')->name('web-identity.store-or-update');
+    });
+
+    # Page management
+    Route::group(['prefix' => 'pages', 'controller' => PageController::class], function () {
+        Route::get('/', 'index')->name('pages.index')->middleware('permission:view pages');
+        Route::get('/create', 'create')->name('pages.create')->middleware('permission:create pages');
+        Route::post('/', 'store')->name('pages.store')->middleware('permission:create pages');
+        Route::get('/{page}/edit', 'edit')->name('pages.edit')->middleware('permission:edit pages');
+        Route::put('/{page}', 'update')->name('pages.update')->middleware('permission:edit pages');
+        Route::delete('/{page}', 'destroy')->name('pages.destroy')->middleware('permission:delete pages');
+    });
+
+    # Menu management
+    Route::group(['prefix' => 'menu', 'controller' => MenusController::class], function () {
+        Route::get('/', 'index')->name('menu.index')->middleware('permission:view menu');
+        Route::get('/create', 'create')->name('menu.create')->middleware('permission:create menu');
+        Route::post('/', 'store')->name('menu.store')->middleware('permission:create menu');
+        Route::get('/{menu}/edit', 'edit')->name('menu.edit')->middleware('permission:edit menu');
+        Route::put('/{menu}', 'update')->name('menu.update')->middleware('permission:edit menu');
+        Route::delete('/{menu}', 'destroy')->name('menu.destroy')->middleware('permission:delete menu');
+        Route::post('/update-order', 'updateOrder')->name('menu.updateOrder');
+    });
+
+    # Menu post kategori
+    Route::group(['prefix' => 'categories', 'controller' => PostCategories::class], function () {
+        Route::get('/', 'index')->name('categories.index')->middleware('permission:view categories');
+        Route::get('/create', 'create')->name('categories.create')->middleware('permission:create categories');
+        Route::post('/', 'store')->name('categories.store')->middleware('permission:create categories');
+        Route::get('/{id}/edit', 'edit')->name('categories.edit')->middleware('permission:edit categories');
+        Route::put('/{id}', 'update')->name('categories.update')->middleware('permission:edit categories');
+        Route::delete('/{id}', 'destroy')->name('categories.destroy')->middleware('permission:delete categories');
+    });
+
+    # Menu post tags
+    Route::group(['prefix' => 'tags', 'controller' => PostTagsController::class], function () {
+        Route::get('/', 'index')->name('tags.index')->middleware('permission:view tags');
+        Route::get('/create', 'create')->name('tags.create')->middleware('permission:create tags');
+        Route::post('/', 'store')->name('tags.store')->middleware('permission:create tags');
+        Route::get('/{id}/edit', 'edit')->name('tags.edit')->middleware('permission:edit tags');
+        Route::put('/{id}', 'update')->name('tags.update')->middleware('permission:edit tags');
+        Route::delete('/{id}', 'destroy')->name('tags.destroy')->middleware('permission:delete tags');
+    });
+
+    # Menu post posts
+    Route::group(['prefix' => 'posts', 'controller' => PostsController::class], function () {
+        Route::get('/', 'index')->name('posts.index')->middleware('permission:view posts');
+        Route::get('/create', 'create')->name('posts.create')->middleware('permission:create posts');
+        Route::post('/', 'store')->name('posts.store')->middleware('permission:create posts');
+        Route::get('/{id}/edit', 'edit')->name('posts.edit')->middleware('permission:edit posts');
+        Route::put('/{id}', 'update')->name('posts.update')->middleware('permission:edit posts');
+        Route::delete('/{id}', 'destroy')->name('posts.destroy')->middleware('permission:delete posts');
+    });
+
+    # Menu albumn
+    Route::group(['prefix' => 'album', 'controller' => AlbumController::class], function () {
+        Route::get('/', 'index')->name('album.index')->middleware('permission:view album');
+        Route::get('/create', 'create')->name('album.create')->middleware('permission:create album');
+        Route::post('/', 'store')->name('album.store')->middleware('permission:create album');
+        Route::get('/{id}/edit', 'edit')->name('album.edit')->middleware('permission:edit album');
+        Route::put('/{id}', 'update')->name('album.update')->middleware('permission:edit album');
+        Route::delete('/{id}', 'destroy')->name('album.destroy')->middleware('permission:delete album');
+        Route::delete('/{albumId}/photos/{photoId}', 'destroyPhoto')->name('album.photo.destroy');
+    });
+
+    # Menu video
+    Route::group(['prefix' => 'video', 'controller' => VideosController::class], function () {
+        Route::get('/', 'index')->name('video.index')->middleware('permission:view video');
+        Route::get('/create', 'create')->name('video.create')->middleware('permission:create video');
+        Route::post('/', 'store')->name('video.store')->middleware('permission:create video');
+        Route::get('/{id}/edit', 'edit')->name('video.edit')->middleware('permission:edit video');
+        Route::put('/{id}', 'update')->name('video.update')->middleware('permission:edit video');
+        Route::delete('/{id}', 'destroy')->name('video.destroy')->middleware('permission:delete video');
+    });
+
+    # Menu information
+    Route::group(['prefix' => 'information', 'controller' => InformationController::class], function () {
+        Route::get('/', 'index')->name('information.index')->middleware('permission:view information');
+        Route::get('/create', 'create')->name('information.create')->middleware('permission:create information');
+        Route::post('/', 'store')->name('information.store')->middleware('permission:create information');
+        Route::get('/{id}/edit', 'edit')->name('information.edit')->middleware('permission:edit information');
+        Route::put('/{id}', 'update')->name('information.update')->middleware('permission:edit information');
+        Route::delete('/{id}', 'destroy')->name('information.destroy')->middleware('permission:delete information');
+    });
+
+    # Menu Ads
+    Route::group(['prefix' => 'ads', 'controller' => AdsController::class], function () {
+        Route::get('/', 'index')->name('ads.index')->middleware('permission:view ads');
+        Route::get('/create', 'create')->name('ads.create')->middleware('permission:create ads');
+        Route::post('/{id}/toggle', 'toggle')->name('ads.toggle')->middleware('permission:create ads');
+        Route::post('/', 'store')->name('ads.store')->middleware('permission:create ads');
+        Route::get('/{id}/edit', 'edit')->name('ads.edit')->middleware('permission:edit ads');
+        Route::put('/{id}', 'update')->name('ads.update')->middleware('permission:edit ads');
+        Route::delete('/{id}', 'destroy')->name('ads.destroy')->middleware('permission:delete ads');
+    });
+
+
+    # Menu Domain Share
+    Route::group(['prefix' => 'domain-share', 'controller' => DomainShareController::class], function () {
+        Route::get('/', 'index')->name('domain-share.index')->middleware('permission:view domain-share');
+        Route::get('/create', 'create')->name('domain-share.create')->middleware('permission:create domain-share');
+        Route::post('/', 'store')->name('domain-share.store')->middleware('permission:create domain-share');
+        Route::get('/{id}/edit', 'edit')->name('domain-share.edit')->middleware('permission:edit domain-share');
+        Route::put('/{id}', 'update')->name('domain-share.update')->middleware('permission:edit domain-share');
+        Route::delete('/{id}', 'destroy')->name('domain-share.destroy')->middleware('permission:delete domain-share');
+    });
+
+    # Artikel Referensi (AI Pipeline: Generate Paraphrase only)
+    Route::group(['prefix' => 'ref-articles', 'controller' => RefArticleController::class], function () {
+        Route::get('/', 'index')->name('ref-articles.index');
+        Route::get('/batch-progress', 'batchProgress')->name('ref-articles.batch-progress');
+        Route::get('/batch-status', 'batchStatus')->name('ref-articles.batch-status');
+        Route::get('/{refArticle}', 'show')->name('ref-articles.show');
+        Route::post('/generate-all', 'generateAll')->name('ref-articles.generate-all');
+        Route::post('/{refArticle}/generate', 'generate')->name('ref-articles.generate');
+        Route::post('/{refArticle}/retry', 'retry')->name('ref-articles.retry');
+        Route::get('/{refArticle}/edit-post', 'editPost')->name('ref-articles.edit-post');
+        Route::put('/{refArticle}/update-post', 'updatePost')->name('ref-articles.update-post');
+        Route::delete('/{refArticle}', 'destroy')->name('ref-articles.destroy');
+    });
+
+    # Scraping - Research + Keyword Config
+    Route::group(['prefix' => 'scraping', 'controller' => ScrapingController::class], function () {
+        Route::get('/', 'index')->name('admin.scraping.index');
+        Route::post('/research', 'research')->name('admin.scraping.research');
+        Route::post('/research-all', 'researchAll')->name('admin.scraping.research-all');
+        Route::get('/batch-progress', 'batchProgress')->name('admin.scraping.batch-progress');
+        Route::get('/batch-status', 'batchStatus')->name('admin.scraping.batch-status');
+        Route::get('/scrape-config', [App\Http\Controllers\Admin\ScraperConfigController::class, 'index'])->name('admin.scraping.scrape-config');
+        Route::put('/scrape-config/{key}', [App\Http\Controllers\Admin\ScraperConfigController::class, 'update'])->name('admin.scraping.scrape-config.update');
+        Route::post('/scrape-config/add-item/{key}', [App\Http\Controllers\Admin\ScraperConfigController::class, 'addItem'])->name('admin.scraping.scrape-config.add-item');
+        Route::get('/scrape-config/remove-item/{key}/{item?}', [App\Http\Controllers\Admin\ScraperConfigController::class, 'removeItem'])->name('admin.scraping.scrape-config.remove-item');
+        Route::post('/scrape-config/flush-cache', [App\Http\Controllers\Admin\ScraperConfigController::class, 'flushCache'])->name('admin.scraping.scrape-config.flush-cache');
+        Route::get('/keywords', 'indexKeywords')->name('admin.scraping.keywords.index');
+        Route::post('/keywords', 'storeKeyword')->name('admin.scraping.keywords.store');
+        Route::delete('/keywords/{id}', 'destroyKeyword')->name('admin.scraping.keywords.destroy');
+        Route::post('/keywords/clear-blocklists', 'clearBlocklists')->name('admin.scraping.keywords.clear-blocklists');
+    });
+
+    # Hasil Scraping - Approve + Reject scraped URLs
+    Route::group(['prefix' => 'hasil-scraping', 'controller' => ScrapeResultController::class], function () {
+        Route::get('/', 'index')->name('admin.hasil-scraping.index');
+        Route::post('/approve', 'approve')->name('admin.hasil-scraping.approve');
+        Route::post('/reject', 'reject')->name('admin.hasil-scraping.reject');
+        Route::post('/destroy', 'destroySelected')->name('admin.hasil-scraping.destroy');
+        Route::post('/retry', 'retryFailed')->name('admin.hasil-scraping.retry');
+    });
+
+    // Posts - Unpublish & Regenerate
+    Route::group(['controller' => PostsController::class], function () {
+        Route::post('/posts/{id}/unpublish', 'unpublish')->name('posts.unpublish');
+        Route::post('/posts/{id}/regenerate', 'regenerate')->name('posts.regenerate');
+    });
+
+    # Publish Schedule Management
+    Route::group(['prefix' => 'schedules', 'controller' => PublishScheduleController::class], function () {
+        Route::get('/', 'index')->name('schedules.index');
+        Route::post('/', 'store')->name('schedules.store');
+        Route::put('/{id}', 'update')->name('schedules.update');
+        Route::delete('/{id}', 'destroy')->name('schedules.destroy');
+        Route::post('/toggle/{id}', 'toggle')->name('schedules.toggle');
+    });
+
+});
+
+#maintenance
+Route::get('/maintenance', function () {
+    return view('pages.client.maintenance');
+});
+
+# SEO: Dynamic robots.txt & sitemap
+Route::get('/robots.txt', [\App\Http\Controllers\SeoController::class, 'robots'])->name('robots');
+Route::get('/llms.txt', [\App\Http\Controllers\SeoController::class, 'llms'])->name('llms');
+Route::get('/llms-full.txt', [\App\Http\Controllers\SeoController::class, 'llmsFull'])->name('llms.full');
+Route::get('/ai.txt', [\App\Http\Controllers\SeoController::class, 'aiTxt'])->name('ai.txt');
+Route::get('/.well-known/ai.txt', [\App\Http\Controllers\SeoController::class, 'aiTxt']);
+Route::get('/opensearch.xml', [\App\Http\Controllers\SeoController::class, 'opensearch'])->name('opensearch');
+Route::get('/sitemap.xml', [\App\Http\Controllers\SeoController::class, 'sitemapIndex'])->name('sitemap.index');
+Route::get('/feed.xml', [\App\Http\Controllers\SeoController::class, 'feed'])->name('feed');
+Route::group(['prefix' => 'sitemap'], function () {
+    Route::get('/pages.xml', [\App\Http\Controllers\SeoController::class, 'sitemapPages'])->name('sitemap.pages');
+    Route::get('/posts.xml', [\App\Http\Controllers\SeoController::class, 'sitemapPosts'])->name('sitemap.posts');
+    Route::get('/categories.xml', [\App\Http\Controllers\SeoController::class, 'sitemapCategories'])->name('sitemap.categories');
+    Route::get('/tags.xml', [\App\Http\Controllers\SeoController::class, 'sitemapTags'])->name('sitemap.tags');
+});
+
+Route::post('/aray/chat', [ArayChatController::class, 'chat'])
+    ->middleware('throttle:12,1')
+    ->name('aray.chat');
+
+#client
+Route::group(['prefix' => '/', 'controller' => InterfaceController::class, 'middleware' => IsActive::class], function () {
+    #dinamis
+    Route::get('/', 'beranda')->name('beranda');
+    Route::get('/search', 'search')->name('search');
+    Route::get('/videos', 'videos')->name('videos');
+    Route::get('/posts', 'posts')->name('posts');
+    Route::get('/beautyversity', 'beautyversity')->name('beautyversity');
+    Route::get('/banners', 'banners')->name('banners');
+    Route::get('/albums', 'albums')->name('albums');
+    Route::get('/info', 'info')->name('info');
+
+    #statis
+    Route::get('/author/{slug}', 'author')->name('author');
+    Route::get('/tag/{slug}', 'tag')->name('tag');
+    Route::get('/video/{slug}', 'video_detail')->name('video_detail');
+    Route::get('/banner/{slug}', 'banner_detail')->name('banner_detail');
+    Route::get('/info/{slug}', 'info_detail')->name('info_detail');
+    Route::get('/page/{slug}', 'page_detail')->name('page_detail');
+    Route::get('/ai-branding', 'branding')->name('branding');
+
+    #static pages - must be before sensitive routes
+    #reflection conflicts with PHP's built-in Reflection class, so use closure
+    Route::get('/about', 'about')->name('about');
+    Route::get('/why-lunaray', 'whyLunaray')->name('why-lunaray');
+    Route::get('/faq', 'exploreFaq')->name('explore-faq');
+    Route::get('/develop-with-us', 'developWithUs')->name('develop-with-us');
+    Route::get('/capabilities', 'capabilities')->name('capabilities');
+    Route::get('/capabilities/specialty', 'capabilitiesSpecialty')->name('capabilities.specialty');
+    Route::get('/capabilities/beyond-cosmetics', 'capabilitiesBeyond')->name('capabilities.beyond');
+    Route::get('/capabilities/packaging', 'capabilitiesPackaging')->name('capabilities.packaging');
+    Route::get('/capabilities/science-research', 'capabilitiesResearch')->name('capabilities.research');
+    Route::get('/ai-concept-builder', 'aiConceptBuilder')->name('ai-concept-builder');
+    Route::get('/reflection', function () { return app(\App\Http\Controllers\Client\InterfaceController::class)->reflection(); })->name('reflection');
+    Route::get('/contact', function () { return app(\App\Http\Controllers\Client\InterfaceController::class)->contact(); })->name('contact');
+
+    #sensitif route
+    Route::get('/{slug}', 'category')->name('category');
+    Route::get('/{category}/{post}', 'post_detail')->name('post_detail');
+});
